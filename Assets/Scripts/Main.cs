@@ -1,49 +1,63 @@
 ﻿using UnityEngine;
 using System.IO;
 using UnityEngine.UI;
+using SFB;
+using System.Collections;
+using UnityEngine.Networking;
 
 public class Main : MonoBehaviour
 {
-	public string importPath = null;
-	public string exportPath = null;
+	//public string importPath = null;
+	//public string exportPath = null;
 
 	[SerializeField] InputField[] inputFields = null;
 
 	private StreamReader reader = null;
 
 	private int inputFieldSpot = 0;
+	private int inputFieldOffset = 14;
 	private int lineCount = 0;
 
-	private string importOutput;
-	private string exportOutput;
+	private string output;
 
-	// Start is called before the first frame update
-	private void Start()
-    {
-		Read();
+	public void FileExplorerImport()
+	{
+		var paths = StandaloneFileBrowser.OpenFilePanel("Import", "", "csv", false);
+		if (paths.Length > 0)
+		{
+			StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
+		}
 	}
 
-	public void Write()
+	public void FileExplorerExport()
 	{
-		exportPath = @"Assets\CSV\writetest.csv";
+		var path = StandaloneFileBrowser.SaveFilePanel("Export", "", "sample", "csv");
+		if (!string.IsNullOrEmpty(path))
+		{
+			Write(path);
+		}
+	}
 
+	private void Write(string exportPath)
+	{
 		for (int x = 0; x < inputFields.Length; x++)
 		{
-			exportOutput += inputFields[x].text + ",";
+			output += inputFields[x].text + ",";
 
-			if ((x % 14) == 0 && x != 0) // Fix this line break
+			if ((x % inputFieldOffset) == 0 && x != 0)
 			{
-				exportOutput += "\n";
+				output += "\n";
+				inputFieldOffset += 15;
 			}
-		}
+		}	
 
-		File.WriteAllText(exportPath, exportOutput);
+		File.WriteAllText(exportPath, output);
+
+		Reset();
 	}
 
-	private void Read()
+	private void Read(string importPath)
     {
-		importPath = @"Assets\CSV\readtest.csv";
-
 		reader = new StreamReader(importPath);
 
 		while (reader.ReadLine() != null)
@@ -56,23 +70,39 @@ public class Main : MonoBehaviour
 		for (int x = 0; x < lineCount; x++)
 		{
 			string line = reader.ReadLine();
-			exportOutput = "";
 
 			foreach(char c in line.ToCharArray())
 			{
 				if (c.ToString() == "," || c.ToString() == " ")
 				{
 					inputFields[inputFieldSpot].textComponent.fontSize = 9; // Remove this later on
-					inputFields[inputFieldSpot].text = exportOutput;
-					exportOutput = "";
+					inputFields[inputFieldSpot].text = output;
+					output = "";
 					inputFieldSpot++;
 				}
 				else
 				{
-					exportOutput += c;
+					output += c;
 				}
 			}
 		}
+
+		Reset();
+	}
+
+	private void Reset()
+	{
+		output = "";
+		inputFieldOffset = 14;
+		inputFieldSpot = 0;
+		lineCount = 0;
+	}
+
+	private IEnumerator OutputRoutine(string url)
+	{
+		var loader = new UnityWebRequest(url);
+		yield return loader;
+		Read(loader.url.Replace("file:///", ""));
 	}
 }
 
