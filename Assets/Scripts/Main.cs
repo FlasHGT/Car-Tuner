@@ -1,17 +1,15 @@
 ﻿using UnityEngine;
 using System.IO;
 using UnityEngine.UI;
-using SFB;
-using System.Collections;
-using UnityEngine.Networking;
 
 public class Main : MonoBehaviour
 {
-	//public string importPath = null;
-	//public string exportPath = null;
+	private UIManager uiManager = null;
 
-	[SerializeField] InputField[] inputFields = null;
+	[SerializeField] InputField[] dataTableX = null;
+	[SerializeField] InputField[] dataTableY = null;
 
+	private InputField[] currentTable = null;
 	private StreamReader reader = null;
 
 	private int inputFieldSpot = 0;
@@ -20,29 +18,13 @@ public class Main : MonoBehaviour
 
 	private string output;
 
-	public void FileExplorerImport()
+	public void Write(string exportPath)
 	{
-		var paths = StandaloneFileBrowser.OpenFilePanel("Import", "", "csv", false);
-		if (paths.Length > 0)
-		{
-			StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
-		}
-	}
+		CheckWhichDataTableIsActive();
 
-	public void FileExplorerExport()
-	{
-		var path = StandaloneFileBrowser.SaveFilePanel("Export", "", "sample", "csv");
-		if (!string.IsNullOrEmpty(path))
+		for (int x = 0; x < currentTable.Length; x++)
 		{
-			Write(path);
-		}
-	}
-
-	private void Write(string exportPath)
-	{
-		for (int x = 0; x < inputFields.Length; x++)
-		{
-			output += inputFields[x].text + ",";
+			output += currentTable[x].text + ",";
 
 			if ((x % inputFieldOffset) == 0 && x != 0)
 			{
@@ -56,8 +38,10 @@ public class Main : MonoBehaviour
 		Reset();
 	}
 
-	private void Read(string importPath)
+	public void Read(string importPath)
     {
+		CheckWhichDataTableIsActive();
+
 		reader = new StreamReader(importPath);
 
 		while (reader.ReadLine() != null)
@@ -75,8 +59,7 @@ public class Main : MonoBehaviour
 			{
 				if (c.ToString() == "," || c.ToString() == " ")
 				{
-					inputFields[inputFieldSpot].textComponent.fontSize = 9; // Remove this later on
-					inputFields[inputFieldSpot].text = output;
+					currentTable[inputFieldSpot].text = output;
 					output = "";
 					inputFieldSpot++;
 				}
@@ -90,19 +73,29 @@ public class Main : MonoBehaviour
 		Reset();
 	}
 
+	private void Start()
+	{
+		uiManager = GetComponent<UIManager>();
+	}
+
+	private void CheckWhichDataTableIsActive () // Change this so you can view both data tables on one screen
+	{
+		if (uiManager.dataTableLeftPanel.activeInHierarchy)
+		{
+			currentTable = dataTableY;
+		}
+		else
+		{
+			currentTable = dataTableX;
+		}
+	}
+
 	private void Reset()
 	{
 		output = "";
 		inputFieldOffset = 14;
 		inputFieldSpot = 0;
 		lineCount = 0;
-	}
-
-	private IEnumerator OutputRoutine(string url)
-	{
-		var loader = new UnityWebRequest(url);
-		yield return loader;
-		Read(loader.url.Replace("file:///", ""));
 	}
 }
 
