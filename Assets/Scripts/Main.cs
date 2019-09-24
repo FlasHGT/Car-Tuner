@@ -18,7 +18,7 @@ public class Main : MonoBehaviour
 
 	private string output;
 
-	public void Write(string exportPath)
+	public void Export(string exportPath)
 	{
 		CheckWhichDataTableIsActive();
 
@@ -38,7 +38,7 @@ public class Main : MonoBehaviour
 		Reset();
 	}
 
-	public void Read(string importPath)
+	public void Import(string importPath)
     {
 		CheckWhichDataTableIsActive();
 
@@ -73,12 +73,17 @@ public class Main : MonoBehaviour
 		Reset();
 	}
 
+	public void ReadArray()
+	{
+
+	}
+
 	private void Start()
 	{
 		uiManager = GetComponent<UIManager>();
 	}
 
-	private void CheckWhichDataTableIsActive () // Change this so you can view both data tables on one screen
+	private void CheckWhichDataTableIsActive ()
 	{
 		if (uiManager.dataTableLeftPanel.activeInHierarchy)
 		{

@@ -58,7 +58,7 @@ public class UIManager : MonoBehaviour
 		var path = StandaloneFileBrowser.SaveFilePanel("Export", "", "sample", "csv");
 		if (!string.IsNullOrEmpty(path))
 		{
-			main.Write(path);
+			main.Export(path);
 		}
 	}
 
@@ -71,6 +71,6 @@ public class UIManager : MonoBehaviour
 	{
 		var loader = new UnityWebRequest(url);
 		yield return loader;
-		main.Read(loader.url.Replace("file:///", ""));
+		main.Import(loader.url.Replace("file:///", ""));
 	}
 }
