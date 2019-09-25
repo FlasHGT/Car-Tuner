@@ -5,20 +5,21 @@ using System.Threading;
 
 public class COM : MonoBehaviour
 {
+	public string output = string.Empty;
+	public string output2 = string.Empty;
+
 	private Main main = null;
 
 	private static SerialPort serialPort = new SerialPort("COM3", 1000000, Parity.None, 8, StopBits.One);
 
 	private string[] message = {"a", "b", "d"};
 	private string readMessage = string.Empty;
-	private string output = string.Empty;
-	private string output2 = string.Empty;
 	private int currentMessage = 0;
 	private int amountOfLinesNotToRead = 6;
 	private bool hasReadFirstArray = false;
 	private bool continueReading = true;
 
-	private void Start()
+	public void ManualStart()
     {
 		main = GetComponent<Main>();
 
@@ -26,7 +27,10 @@ public class COM : MonoBehaviour
 		serialPort.WriteTimeout = 1000;
 		serialPort.Handshake = Handshake.None;
 
-		serialPort.Open();
+		if(!serialPort.IsOpen)
+		{
+			serialPort.Open();
+		}
 
 		while (currentMessage < message.Length)
 		{
@@ -42,7 +46,6 @@ public class COM : MonoBehaviour
 		while (continueReading)
 		{
 			readMessage = serialPort.ReadLine();
-			//Debug.Log(readMessage);
 
 			if (readMessage == "> d")
 			{
@@ -104,8 +107,7 @@ public class COM : MonoBehaviour
 				readMessage = serialPort.ReadLine();
 			}
 		}
-		Debug.Log(output);
-		Debug.Log(output2);
+
 		hasReadFirstArray = true;
 	}
 }
