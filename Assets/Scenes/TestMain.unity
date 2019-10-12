@@ -14145,6 +14145,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: db6286fca3d1ec24fb432417d9ab1b78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  dataTableX1: {fileID: 0}
+  dataTableY1: {fileID: 0}
   dataTableX:
   - {fileID: 1468573093}
   - {fileID: 2027051261}

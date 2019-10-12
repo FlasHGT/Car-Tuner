@@ -1,18 +1,14 @@
 ﻿using UnityEngine;
 using System.IO.Ports;
-using System;
-using System.Threading;
 
 public class COM : MonoBehaviour
 {
+	public SerialPort serialPort = new SerialPort("COM3", 1000000, Parity.None, 8, StopBits.One);
+
 	public string output = string.Empty;
 	public string output2 = string.Empty;
 
-	private Main main = null;
-
-	private static SerialPort serialPort = new SerialPort("COM3", 1000000, Parity.None, 8, StopBits.One);
-
-	private string[] message = {"a", "b", "d"};
+	private string[] importMessage = {"a", "b", "d"};
 	private string readMessage = string.Empty;
 	private int currentMessage = 0;
 	private int amountOfLinesNotToRead = 6;
@@ -21,8 +17,6 @@ public class COM : MonoBehaviour
 
 	public void ManualStart()
     {
-		main = GetComponent<Main>();
-
 		serialPort.ReadTimeout = 1000;
 		serialPort.WriteTimeout = 1000;
 		serialPort.Handshake = Handshake.None;
@@ -32,9 +26,9 @@ public class COM : MonoBehaviour
 			serialPort.Open();
 		}
 
-		while (currentMessage < message.Length)
+		while (currentMessage < importMessage.Length)
 		{
-			serialPort.Write(message[currentMessage]);
+			serialPort.Write(importMessage[currentMessage]);
 			currentMessage++;
 		}
 
@@ -71,6 +65,8 @@ public class COM : MonoBehaviour
 					serialPort.ReadLine();
 				}
 
+				readMessage = serialPort.ReadLine();
+
 				ReadArray();
 				continueReading = false;
 			}
@@ -83,31 +79,115 @@ public class COM : MonoBehaviour
 		{
 			if (x > 9)
 			{
-				readMessage = readMessage.Replace("   " + x + " |    ", "");
+				readMessage = readMessage.Replace("   " + x + " |   ", "");
+
+				for (int y = 0; y < 10; y++)
+				{
+					if (readMessage.Substring(0, 2) == " " + y)
+					{
+						readMessage = readMessage.Remove(0, 1);
+					}
+				}
 			}
 			else
 			{
-				readMessage = readMessage.Replace("    " + x + " |    ", "");
+				if(x == 9)
+				{
+					readMessage = readMessage.Replace("    " + x + " |   ", "");
+
+					for (int y = 0; y < 10; y++)
+					{
+						if (readMessage.Substring(0, 2) == " " + y)
+						{
+							
+							readMessage = readMessage.Remove(0, 1);
+						}
+					}
+				}
+				else
+				{
+					for (int y = 10; y < 17; y++)
+					{
+						if (readMessage.Contains("" + y))
+						{
+							readMessage = readMessage.Replace("    " + x + " |   ", "");
+						}
+					}
+
+					readMessage = readMessage.Replace("    " + x + " |    ", "");
+				}
 			}
 
-			readMessage = readMessage.Replace("     ", ",");
-			readMessage = readMessage.Replace(" ", ","); // Read this and add to an array
-
-			if(!hasReadFirstArray)
+			if (x > 9)
 			{
-				output += readMessage + "\n";
+				readMessage = readMessage.Replace("    ", ",");
+
+				for (int y = 0; y < 10; y++)
+				{
+					if (readMessage.Contains("" + y))
+					{
+						readMessage = readMessage.Replace(", ", ",");
+					}
+				}
 			}
 			else
 			{
-				output2 += readMessage + "\n";
+				if(x == 9)
+				{
+					readMessage = readMessage.Replace("    ", ",");
+
+					for (int y = 0; y < 10; y++)
+					{
+						if (readMessage.Contains("" + y))
+						{
+							readMessage = readMessage.Replace(", ", ",");
+						}
+					}
+				}
+				else
+				{
+					readMessage = readMessage.Replace("     ", ",");
+
+					for (int y = 10; y < 17; y++)
+					{
+						if (readMessage.Contains("" + y))
+						{
+							readMessage = readMessage.Replace("    ", ",");
+						}
+					}
+				}
 			}
 
-			if(x != 15 && !hasReadFirstArray)
+			readMessage = readMessage.Replace(" ", ",");
+
+			if (!hasReadFirstArray)
+			{
+				if(x != 15)
+				{
+					output += readMessage + "\n";
+				}
+				else
+				{
+					output += readMessage;
+				}
+			}
+			else
+			{
+				if (x != 15)
+				{
+					output2 += readMessage + "\n";
+				}
+				else
+				{
+					output2 += readMessage;
+				}
+			}
+	
+			if (x != 15)
 			{
 				readMessage = serialPort.ReadLine();
 			}
 		}
-
 		hasReadFirstArray = true;
 	}
 }

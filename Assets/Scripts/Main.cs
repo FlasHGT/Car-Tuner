@@ -1,12 +1,19 @@
 ﻿using UnityEngine;
 using System.IO;
 using UnityEngine.UI;
+using System;
+using System.Text;
+using CSVWrite; // remove this
+using System.Threading;
 
 public class Main : MonoBehaviour
 {
 	[SerializeField] GameObject dataTableX1 = null; // Remove this
 	[SerializeField] GameObject dataTableY1 = null; // Remove this
-
+	private string[] message = {"a", "b"}; // Move this to COM.cs as exportMessage
+	private string[] message2 = {"a", "b", "d"}; // Remove this
+	private int currentMessage = 0; // Remove this
+	
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
@@ -80,6 +87,104 @@ public class Main : MonoBehaviour
 		Reset();
 	}
 
+
+	public void WriteComport()
+	{
+		//for (int x = 0; x < dataTableX.Length; x++)
+		//{
+		//	output += dataTableX[x].text + ",";
+
+		//	if ((x % inputFieldOffset) == 0 && x != 0)
+		//	{
+		//		output += "\n";
+		//		inputFieldOffset += 16;
+		//	}
+		//}
+
+		//inputFieldOffset = 15;
+		//output += "\n";
+
+		//for (int x = 0; x < dataTableY.Length; x++)
+		//{
+		//	output += dataTableY[x].text + ",";
+
+		//	if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
+		//	{
+		//		output += "\n";
+		//		inputFieldOffset += 16;
+		//	}
+		//}
+
+		//com.serialPort.ReadTimeout = 1000;
+		//com.serialPort.WriteTimeout = 1000;
+
+		//if (!com.serialPort.IsOpen)
+		//{
+		//	com.serialPort.Open();
+		//}
+
+		//while (currentMessage < message.Length)
+		//{
+		//	com.serialPort.Write(message[currentMessage]);
+		//	currentMessage++;
+		//}
+
+		//currentMessage = 0;
+
+		//while (currentMessage < 30)
+		//{
+		//	Debug.Log(com.serialPort.ReadLine());
+		//	currentMessage++;
+		//}
+
+		//Reset();
+
+		if (!com.serialPort.IsOpen)
+		{
+			com.serialPort.Open();
+		}
+
+		while (currentMessage < message.Length)
+		{
+			com.serialPort.Write(message[currentMessage]);
+			currentMessage++;
+		}
+
+		for (int y = 0; y < 16; y++)
+		{
+			for (int x = 0; x < 16; x++)
+			{
+				Thread.Sleep(30);
+				com.serialPort.Write("e");
+				com.serialPort.Write("0 " + "" + x + " " + "" + y + " " + "" + dataTableX[inputFieldSpot].text);
+				com.serialPort.Write("\r"); // ENTER
+				inputFieldSpot++;
+			}
+		}
+
+		Reset();
+
+		for (int y = 0; y < 16; y++)
+		{
+			for (int x = 0; x < 16; x++)
+			{
+				Thread.Sleep(30);
+				com.serialPort.Write("e");
+				com.serialPort.Write("1 " + "" + x + " " + "" + y + " " + "" + dataTableY[inputFieldSpot].text);
+				com.serialPort.Write("\r"); // ENTER
+				inputFieldSpot++;
+			}
+		}
+
+		Reset();
+
+		//while (currentMessage < 80)
+		//{
+		//	Debug.Log(com.serialPort.ReadLine());
+		//	currentMessage++;
+		//}
+	}
+
 	public void ReadComport ()
 	{
 		com.ManualStart();
@@ -147,6 +252,17 @@ public class Main : MonoBehaviour
 	{
 		uiManager = GetComponent<UIManager>();
 		com = GetComponent<COM>();
+
+		for (int x = 0; x < dataTableX.Length; x++)
+		{
+			dataTableX[x].textComponent.text = dataTableX[x].text;
+			Debug.Log("HELLO");
+		}
+
+		for (int y = 0; y < dataTableY.Length; y++)
+		{
+			dataTableY[y].textComponent.text = dataTableY[y].text;
+		}
 	}
 
 	private void CheckWhichDataTableIsActive ()
@@ -169,4 +285,3 @@ public class Main : MonoBehaviour
 		lineCount = 0;
 	}
 }
-
