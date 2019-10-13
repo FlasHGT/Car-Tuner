@@ -12,14 +12,15 @@ public class RowColSelector : MonoBehaviour
 	{
 		if(button.gameObject.activeInHierarchy)
 		{
-			button.gameObject.SetActive(false);
+			//button.gameObject.SetActive(false);
 			valueInputField.gameObject.SetActive(true);
 		}
 
-		for (int x = 0; x < inputFields.Length; x++)
-		{
-			inputFields[x].GetComponent<Image>().color = Color.yellow;
-		}
+        foreach(InputField _field in inputFields)
+        {
+            _field.GetComponent<Image>().color = Color.yellow;
+        }
+        
 	}
 
 	public void ApplyValue ()
@@ -33,7 +34,6 @@ public class RowColSelector : MonoBehaviour
 		}
 
 		valueInputField.text = string.Empty;
-		valueInputField.gameObject.SetActive(false);
-		button.gameObject.SetActive(true);
+		//valueInputField.gameObject.SetActive(false);
 	}
 }
