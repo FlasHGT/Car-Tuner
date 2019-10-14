@@ -5,27 +5,24 @@ public class RowColSelector : MonoBehaviour
 {
 	public Main main = null;
 
-	[SerializeField] Button button = null;
 	[SerializeField] InputField valueInputField = null;
 
-	[SerializeField] InputField[] inputFields = null; 
+	[SerializeField] InputField[] inputFields = null;
 
-    public void ActivateInputField ()
+	private Button button = null;
+
+	public void ActivateInputField ()
 	{
-		if(button.gameObject.activeInHierarchy && !main.inputFieldBeingEdited)
+		if(!valueInputField.gameObject.activeInHierarchy)
 		{
-			button.gameObject.SetActive(false);
 			valueInputField.gameObject.SetActive(true);
-			main.inputFieldBeingEdited = true;
 
-			valueInputField.text = 0.ToString();
-			valueInputField.textComponent.text = 0.ToString();
-
-			for (int x = 0; x < inputFields.Length; x++)
+			foreach (InputField _field in inputFields)
 			{
-				inputFields[x].GetComponent<Image>().color = Color.yellow;
+				_field.GetComponent<Selectable>().selectedBySelector = true;
+				_field.GetComponent<Image>().color = Color.yellow;
 			}
-		}
+		}    
 	}
 
 	public void ApplyValue ()
@@ -36,24 +33,37 @@ public class RowColSelector : MonoBehaviour
 			i.text = newValue.ToString();
 			i.textComponent.text = newValue.ToString();
 			i.GetComponent<Image>().color = Color.white;
+			i.GetComponent<Selectable>().selectedBySelector = false;
 		}
 
 		valueInputField.text = string.Empty;
 		valueInputField.gameObject.SetActive(false);
-		button.gameObject.SetActive(true);
-		main.inputFieldBeingEdited = false;
 	}
 
-	private void Update ()
+	private void Start ()
 	{
-		if(valueInputField.gameObject.activeInHierarchy && Input.GetKeyDown(KeyCode.UpArrow))
+		button = GetComponent<Button>();
+	}
+
+	private void Update()
+	{
+		if (Input.GetKeyDown(KeyCode.Return) && inputFields[0].GetComponent<Image>().color == Color.yellow && inputFields[1].GetComponent<Image>().color == Color.yellow)
+		{
+			if(valueInputField.text != string.Empty)
+			{
+				ApplyValue();
+			}
+		}
+
+		if (valueInputField.gameObject.activeInHierarchy && Input.GetKeyDown(KeyCode.UpArrow) && inputFields[0].GetComponent<Image>().color == Color.yellow && inputFields[1].GetComponent<Image>().color == Color.yellow && valueInputField.isFocused)
 		{
 			float newFloat = 0f;
 
-			if(valueInputField.text == string.Empty)
+			if (valueInputField.text == string.Empty)
 			{
 				newFloat = 0f + 0.1f;
-			}else
+			}
+			else
 			{
 				newFloat = float.Parse(valueInputField.text) + 0.1f;
 			}
@@ -61,7 +71,7 @@ public class RowColSelector : MonoBehaviour
 			valueInputField.text = newFloat.ToString();
 			valueInputField.textComponent.text = newFloat.ToString();
 		}
-		else if(Input.GetKeyDown(KeyCode.DownArrow))
+		else if (Input.GetKeyDown(KeyCode.DownArrow) && inputFields[0].GetComponent<Image>().color == Color.yellow && inputFields[1].GetComponent<Image>().color == Color.yellow && valueInputField.isFocused)
 		{
 			float newFloat = 0f;
 

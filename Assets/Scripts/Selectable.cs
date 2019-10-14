@@ -6,12 +6,15 @@ using UnityEngine.UI;
 
 public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, IDeselectHandler
 {
-	public Main main = null;
+	public InputField mainInputField = null;
+	public bool selectedBySelector = false;
 
 	public static HashSet<Selectable> allMySelectables = new HashSet<Selectable>();
 	public static HashSet<Selectable> currentlySelected = new HashSet<Selectable>();
 
 	private Image image = null;
+	private InputField inputField = null;
+	private Color startingColor;
 
 	private void Awake ()
 	{
@@ -21,11 +24,13 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	private void Start ()
 	{
 		image = GetComponent<Image>();
+		inputField = GetComponent<InputField>();
+		startingColor = image.color;
 	}
 
 	public void OnDeselect(BaseEventData eventData)
 	{
-		if(!main.inputFieldBeingEdited)
+		if(!mainInputField.gameObject.activeInHierarchy)
 		{
 			image.color = Color.white;
 		}
@@ -38,7 +43,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 			DeselectAll(eventData);
 		}
 
-		if(!main.inputFieldBeingEdited)
+		if(!mainInputField.gameObject.activeInHierarchy)
 		{
 			OnSelect(eventData);
 		}
@@ -46,7 +51,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 	public void OnSelect(BaseEventData eventData)
 	{
-		if(!main.inputFieldBeingEdited)
+		if(!mainInputField.gameObject.activeInHierarchy)
 		{
 			currentlySelected.Add(this);
 			image.color = Color.yellow;
@@ -60,5 +65,23 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 			selectable.OnDeselect(eventData);
 		}
 		currentlySelected.Clear();
+	}
+
+	private void Update ()
+	{
+		if (mainInputField.gameObject.activeInHierarchy)
+		{
+			if(image.color == Color.yellow && !selectedBySelector)
+			{
+				image.color = startingColor;
+			}
+
+			inputField.interactable = false;
+		}
+		else if(image.color != Color.yellow)
+		{
+			image.color = startingColor;
+			inputField.interactable = true;
+		}
 	}
 }

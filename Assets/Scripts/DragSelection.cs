@@ -58,7 +58,7 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
 		foreach (Selectable selectable in Selectable.allMySelectables)
 		{
-			if (selectionRect.Contains(Camera.main.WorldToScreenPoint(selectable.transform.position)) && !main.inputFieldBeingEdited)
+			if (selectionRect.Contains(Camera.main.WorldToScreenPoint(selectable.transform.position)))
 			{
 				selectable.OnSelect(eventData);
 			}

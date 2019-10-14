@@ -3,7 +3,6 @@ using System.IO;
 using UnityEngine.UI;
 using System;
 using System.Text;
-using CSVWrite; // remove this
 using System.Threading;
 
 public class Main : MonoBehaviour
@@ -252,17 +251,6 @@ public class Main : MonoBehaviour
 	{
 		uiManager = GetComponent<UIManager>();
 		com = GetComponent<COM>();
-
-		for (int x = 0; x < dataTableX.Length; x++)
-		{
-			dataTableX[x].textComponent.text = dataTableX[x].text;
-			Debug.Log("HELLO");
-		}
-
-		for (int y = 0; y < dataTableY.Length; y++)
-		{
-			dataTableY[y].textComponent.text = dataTableY[y].text;
-		}
 	}
 
 	private void CheckWhichDataTableIsActive ()
