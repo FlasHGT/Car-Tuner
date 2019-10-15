@@ -8,6 +8,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 {
 	public InputField mainInputField = null;
 	public bool selectedBySelector = false;
+	public Main main = null;
 
 	public static HashSet<Selectable> allMySelectables = new HashSet<Selectable>();
 	public static HashSet<Selectable> currentlySelected = new HashSet<Selectable>();
@@ -30,7 +31,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 	public void OnDeselect(BaseEventData eventData)
 	{
-		if(!mainInputField.gameObject.activeInHierarchy)
+		if(!mainInputField.gameObject.activeInHierarchy && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
 		{
 			image.color = Color.white;
 		}
@@ -69,6 +70,11 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 	private void Update ()
 	{
+		if(!selectedBySelector && main.currentlyActiveInputField && main.currentlyActiveInputField.gameObject.activeInHierarchy)
+		{
+			image.color = startingColor;
+		}
+
 		if (mainInputField.gameObject.activeInHierarchy)
 		{
 			if(image.color == Color.yellow && !selectedBySelector)
@@ -82,6 +88,39 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 		{
 			image.color = startingColor;
 			inputField.interactable = true;
+		}
+
+		if (Input.GetKeyDown(KeyCode.UpArrow) && image.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy)
+		{
+			float newFloat = 0f;
+
+			if (inputField.text == string.Empty)
+			{
+				newFloat = 0f + 0.1f;
+			}
+			else
+			{
+				newFloat = float.Parse(inputField.text) + 0.1f;
+			}
+
+			inputField.text = newFloat.ToString();
+			inputField.textComponent.text = newFloat.ToString();
+		}
+		else if (Input.GetKeyDown(KeyCode.DownArrow) && image.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy)
+		{
+			float newFloat = 0f;
+
+			if (inputField.text == string.Empty)
+			{
+				newFloat = 0f + 0.1f;
+			}
+			else
+			{
+				newFloat = float.Parse(inputField.text) - 0.1f;
+			}
+
+			inputField.text = newFloat.ToString();
+			inputField.textComponent.text = newFloat.ToString();
 		}
 	}
 }

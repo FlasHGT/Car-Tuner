@@ -7,6 +7,8 @@ using System.Threading;
 
 public class Main : MonoBehaviour
 {
+	public InputField currentlyActiveInputField = null;
+
 	[SerializeField] GameObject dataTableX1 = null; // Remove this
 	[SerializeField] GameObject dataTableY1 = null; // Remove this
 	private string[] message = {"a", "b"}; // Move this to COM.cs as exportMessage

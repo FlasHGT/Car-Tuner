@@ -7,8 +7,9 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 {
 	public Main main = null;
 
-	[SerializeField] Image selectionBoxImage;
+	[SerializeField] Image selectionBoxImage = null;
 
+	private Image image = null;
 	private Vector2 startPosition;
 	private Rect selectionRect;
 
@@ -96,6 +97,23 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 		if (nextObject)
 		{
 			ExecuteEvents.Execute<IPointerClickHandler>(nextObject, eventData, (x, y) => { x.OnPointerClick((PointerEventData)y); });
+		}
+	}
+
+	private void Start ()
+	{
+		image = GetComponent<Image>();
+	}
+
+	private void Update ()
+	{
+		if(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+		{
+			image.enabled = true;
+		}
+		else
+		{
+			image.enabled = false;
 		}
 	}
 }

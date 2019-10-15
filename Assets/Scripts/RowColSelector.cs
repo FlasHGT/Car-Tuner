@@ -47,12 +47,14 @@ public class RowColSelector : MonoBehaviour
 
 	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.Return) && inputFields[0].GetComponent<Image>().color == Color.yellow && inputFields[1].GetComponent<Image>().color == Color.yellow)
+		if(valueInputField.isFocused)
 		{
-			if(valueInputField.text != string.Empty)
-			{
-				ApplyValue();
-			}
+			main.currentlyActiveInputField = valueInputField;
+		}
+
+		if (Input.GetKeyDown(KeyCode.Return) && inputFields[0].GetComponent<Image>().color == Color.yellow && inputFields[1].GetComponent<Image>().color == Color.yellow && main.currentlyActiveInputField == valueInputField)
+		{
+			ApplyValue();
 		}
 
 		if (valueInputField.gameObject.activeInHierarchy && Input.GetKeyDown(KeyCode.UpArrow) && inputFields[0].GetComponent<Image>().color == Color.yellow && inputFields[1].GetComponent<Image>().color == Color.yellow && valueInputField.isFocused)
