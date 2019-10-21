@@ -20,7 +20,7 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 			Selectable.DeselectAll(new BaseEventData(EventSystem.current));
 		}
 
-		selectionBoxImage.gameObject.SetActive(true);
+		//selectionBoxImage.gameObject.SetActive(true);
 		startPosition = eventData.position;
 		selectionRect = new Rect();
 	}
@@ -49,13 +49,13 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 			selectionRect.yMax = eventData.position.y;
 		}
 
-		selectionBoxImage.rectTransform.offsetMin = selectionRect.min;
-		selectionBoxImage.rectTransform.offsetMax = selectionRect.max;
+		//selectionBoxImage.rectTransform.offsetMin = selectionRect.min;
+		//selectionBoxImage.rectTransform.offsetMax = selectionRect.max;
 	}
 
 	public void OnEndDrag(PointerEventData eventData)
 	{
-		selectionBoxImage.gameObject.SetActive(false);
+		//selectionBoxImage.gameObject.SetActive(false);
 
 		foreach (Selectable selectable in Selectable.allMySelectables)
 		{

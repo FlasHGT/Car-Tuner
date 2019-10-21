@@ -10,7 +10,7 @@ using System.IO.Ports;
 
 public class Main : MonoBehaviour
 {
-	public InputField currentlyActiveInputField = null;
+	[HideInInspector] public InputField currentlyActiveInputField = null;
 
 	private string[] message = {"a", "b"}; // Move this to COM.cs as exportMessage
 	private int currentMessage = 0; // Remove this
