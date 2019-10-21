@@ -79,7 +79,7 @@ public class RowColSelector : MonoBehaviour
 
 			if (valueInputField.text == string.Empty)
 			{
-				newFloat = 0f + 0.1f;
+				newFloat = 0f - 0.1f;
 			}
 			else
 			{

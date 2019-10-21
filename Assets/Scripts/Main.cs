@@ -4,21 +4,25 @@ using UnityEngine.UI;
 using System;
 using System.Text;
 using System.Threading;
+using UnityEngine.EventSystems;
+using System.Collections.Generic;
+using System.IO.Ports;
 
 public class Main : MonoBehaviour
 {
 	public InputField currentlyActiveInputField = null;
 
-	[SerializeField] GameObject dataTableX1 = null; // Remove this
-	[SerializeField] GameObject dataTableY1 = null; // Remove this
 	private string[] message = {"a", "b"}; // Move this to COM.cs as exportMessage
-	private string[] message2 = {"a", "b", "d"}; // Remove this
 	private int currentMessage = 0; // Remove this
-	
+
+	[SerializeField] Toggle xToggle = null;
+	[SerializeField] Toggle yToggle = null;
+
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
-	private UIManager uiManager = null;
+	private BaseEventData eventData = null;
+
 	private COM com = null;
 
 	private InputField[] currentTable = null;
@@ -30,62 +34,197 @@ public class Main : MonoBehaviour
 
 	private string output;
 
+	public void Deselect()
+	{
+		Selectable.DeselectAll(eventData);
+	}
+
 	public void Export(string exportPath)
 	{
-		//CheckWhichDataTableIsActive(); // Uncomment this
-		CheckCurrentTable(); // Remove this
-
-		for (int x = 0; x < currentTable.Length; x++)
+		if(xToggle.isOn && yToggle.isOn)
 		{
-			output += currentTable[x].text + ",";
-
-			if ((x % inputFieldOffset) == 0 && x != 0)
+			for (int x = 0; x < dataTableX.Length; x++)
 			{
-				output += "\n";
-				inputFieldOffset += 16;
+				output += dataTableX[x].text + ",";
+
+				if ((x % inputFieldOffset) == 0 && x != 0)
+				{
+					output += "\n";
+					inputFieldOffset += 16;
+				}
 			}
-		}	
 
-		File.WriteAllText(exportPath, output);
+			inputFieldOffset = 15;
+			output += "\n";
 
-		Reset();
+			for (int x = 0; x < dataTableY.Length; x++)
+			{
+				output += dataTableY[x].text + ",";
+
+				if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
+				{
+					output += "\n";
+					inputFieldOffset += 16;
+				}
+			}
+
+			File.WriteAllText(exportPath, output);
+
+			Reset();
+		}
+		else 
+		{
+			if(!xToggle.isOn && !yToggle.isOn)
+			{
+				Debug.Log("Error"); // Make a pop up
+				return;
+			}
+
+			if(xToggle.isOn)
+			{
+				currentTable = dataTableX;
+			}
+			else
+			{
+				currentTable = dataTableY;
+			}
+
+			for (int x = 0; x < currentTable.Length; x++)
+			{
+				output += currentTable[x].text + ",";
+
+				if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
+				{
+					output += "\n";
+					inputFieldOffset += 16;
+				}
+			}
+
+			File.WriteAllText(exportPath, output);
+
+			Reset();
+		}
 	}
 
 	public void Import(string importPath)
-    {
-		//CheckWhichDataTableIsActive(); // Uncomment this
-		CheckCurrentTable(); // Remove this
-
-		reader = new StreamReader(importPath);
-
-		while (reader.ReadLine() != null)
+	{
+		if (xToggle.isOn && yToggle.isOn)
 		{
-			lineCount++;
-		}
+			reader = new StreamReader(importPath);
 
-		reader = new StreamReader(importPath);
-
-		for (int x = 0; x < lineCount; x++)
-		{
-			string line = reader.ReadLine();
-
-			foreach(char c in line.ToCharArray())
+			while (reader.ReadLine() != null)
 			{
-				if (c.ToString() == "," || c.ToString() == " ")
+				lineCount++;
+			}
+
+			if (lineCount == 33)
+			{
+				reader = new StreamReader(importPath);
+
+				for (int x = 0; x < 16; x++)
 				{
-					currentTable[inputFieldSpot].textComponent.fontSize = 9; // Remove this
-					currentTable[inputFieldSpot].text = output;
-					output = string.Empty;
-					inputFieldSpot++;
+					string line = reader.ReadLine();
+
+					foreach (char c in line.ToCharArray())
+					{
+						if (c.ToString() == "," || c.ToString() == " ")
+						{
+							dataTableX[inputFieldSpot].text = output;
+							output = string.Empty;
+							inputFieldSpot++;
+						}
+						else
+						{
+							output += c;
+						}
+					}
 				}
-				else
+
+				inputFieldSpot = 0;
+
+				for (int x = 0; x < 17; x++)
 				{
-					output += c;
+					string line = reader.ReadLine();
+
+					if (line != string.Empty)
+					{
+						foreach (char c in line.ToCharArray())
+						{
+							if (c.ToString() == "," || c.ToString() == " ")
+							{
+								dataTableY[inputFieldSpot].text = output;
+								output = string.Empty;
+								inputFieldSpot++;
+							}
+							else
+							{
+								output += c;
+							}
+						}
+					}
 				}
 			}
-		}
+			else
+			{
+				Debug.Log("Error"); // Make a pop up
+			}
 
-		Reset();
+			Reset();
+		}
+		else
+		{
+			if (!xToggle.isOn && !yToggle.isOn)
+			{
+				Debug.Log("Error"); // Make a pop up
+				return;
+			}
+
+			if (xToggle.isOn)
+			{
+				currentTable = dataTableX;
+			}
+			else
+			{
+				currentTable = dataTableY;
+			}
+
+			reader = new StreamReader(importPath);
+
+			while (reader.ReadLine() != null)
+			{
+				lineCount++;
+			}
+
+			if (lineCount == 16)
+			{
+				reader = new StreamReader(importPath);
+
+				for (int x = 0; x < lineCount; x++)
+				{
+					string line = reader.ReadLine();
+
+					foreach (char c in line.ToCharArray())
+					{
+						if (c.ToString() == "," || c.ToString() == " ")
+						{
+							currentTable[inputFieldSpot].text = output;
+							output = string.Empty;
+							inputFieldSpot++;
+						}
+						else
+						{
+							output += c;
+						}
+					}
+				}
+			}
+			else
+			{
+				Debug.Log("Error"); // Make a pop up
+			}
+
+			Reset();
+		}
 	}
 
 
@@ -155,10 +294,10 @@ public class Main : MonoBehaviour
 		{
 			for (int x = 0; x < 16; x++)
 			{
-				Thread.Sleep(30);
 				com.serialPort.Write("e");
-				com.serialPort.Write("0 " + "" + x + " " + "" + y + " " + "" + dataTableX[inputFieldSpot].text);
-				com.serialPort.Write("\r"); // ENTER
+				output = "0 " + "" + x + " " + "" + y + " " + "" + dataTableX[inputFieldSpot].text;
+				com.serialPort.Write(output);
+				com.serialPort.Write("\r\n"); // ENTER
 				inputFieldSpot++;
 			}
 		}
@@ -169,21 +308,15 @@ public class Main : MonoBehaviour
 		{
 			for (int x = 0; x < 16; x++)
 			{
-				Thread.Sleep(30);
 				com.serialPort.Write("e");
-				com.serialPort.Write("1 " + "" + x + " " + "" + y + " " + "" + dataTableY[inputFieldSpot].text);
-				com.serialPort.Write("\r"); // ENTER
+				output = "1 " + "" + x + " " + "" + y + " " + "" + dataTableY[inputFieldSpot].text;
+				com.serialPort.Write(output);
+				com.serialPort.Write("\r\n"); // ENTER
 				inputFieldSpot++;
 			}
 		}
 
 		Reset();
-
-		//while (currentMessage < 80)
-		//{
-		//	Debug.Log(com.serialPort.ReadLine());
-		//	currentMessage++;
-		//}
 	}
 
 	public void ReadComport ()
@@ -223,48 +356,9 @@ public class Main : MonoBehaviour
 		Reset();
 	}
 
-	public void ChangeDataTable () // Remove this
-	{
-		if (dataTableX1.activeInHierarchy)
-		{
-			dataTableX1.SetActive(false);
-			dataTableY1.SetActive(true);
-		}
-		else
-		{
-			dataTableY1.SetActive(false);
-			dataTableX1.SetActive(true);
-		}
-	}
-
-	private void CheckCurrentTable()
-	{
-		if(dataTableX1.activeInHierarchy)
-		{
-			currentTable = dataTableX;
-		}
-		else
-		{
-			currentTable = dataTableY;
-		}
-	}
-
 	private void Start()
 	{
-		uiManager = GetComponent<UIManager>();
 		com = GetComponent<COM>();
-	}
-
-	private void CheckWhichDataTableIsActive ()
-	{
-		if (uiManager.dataTableLeftPanel.activeInHierarchy)
-		{
-			currentTable = dataTableY;
-		}
-		else
-		{
-			currentTable = dataTableX;
-		}
 	}
 
 	private void Reset()

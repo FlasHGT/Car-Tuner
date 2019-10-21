@@ -31,7 +31,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 	public void OnDeselect(BaseEventData eventData)
 	{
-		if(!mainInputField.gameObject.activeInHierarchy && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
+		if(!selectedBySelector && !mainInputField.gameObject.activeInHierarchy && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
 		{
 			image.color = Color.white;
 		}
@@ -112,7 +112,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 			if (inputField.text == string.Empty)
 			{
-				newFloat = 0f + 0.1f;
+				newFloat = 0f - 0.1f;
 			}
 			else
 			{

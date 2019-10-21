@@ -1,9 +1,10 @@
 ﻿using UnityEngine;
 using System.IO.Ports;
+using System.Collections.Generic;
 
 public class COM : MonoBehaviour
 {
-	public SerialPort serialPort = new SerialPort("COM3", 1000000, Parity.None, 8, StopBits.One);
+	public SerialPort serialPort = new SerialPort("COM4", 1000000, Parity.None, 8, StopBits.One);
 
 	public string output = string.Empty;
 	public string output2 = string.Empty;
