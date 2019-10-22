@@ -35,20 +35,44 @@ public class COM : MonoBehaviour
 		serialPort.DataBits = int.Parse(dataBits.text);
 		SetParity();
 		SetStopBits();
-		Debug.Log(serialPort.PortName);
-		Debug.Log(serialPort.BaudRate);
-		Debug.Log(serialPort.DataBits);
-		Debug.Log(serialPort.Parity);
-		Debug.Log(serialPort.StopBits);
+	}
+
+	public void ChangeProfile (int i)
+	{
+		switch (i)
+		{
+			case 0:
+				importMessage[1] = "b";
+				break;
+			case 1:
+				importMessage[1] = "e";
+				break;
+			case 2:
+				importMessage[1] = "p";
+				break;
+			case 3:
+				importMessage[1] = "0";
+				break;
+			case 4:
+				importMessage[1] = "1";
+				break;
+			case 5:
+				importMessage[1] = "2";
+				break;
+			case 6:
+				importMessage[1] = "3";
+				break;
+			case 7:
+				importMessage[1] = "4";
+				break;
+			default:
+				break;
+		}
 	}
 
 	public void ManualStart()
-    {
-		serialPort.ReadTimeout = 1000;
-		serialPort.WriteTimeout = 1000;
-		serialPort.Handshake = Handshake.None;
-
-		if(!serialPort.IsOpen)
+	{
+		if (!serialPort.IsOpen)
 		{
 			serialPort.Open();
 		}
@@ -58,6 +82,8 @@ public class COM : MonoBehaviour
 			serialPort.Write(importMessage[currentMessage]);
 			currentMessage++;
 		}
+
+		Reset();
 
 		Read();
 	}
@@ -189,7 +215,7 @@ public class COM : MonoBehaviour
 
 			if (!hasReadFirstArray)
 			{
-				if(x != 15)
+				if (x != 15)
 				{
 					output += readMessage + "\n";
 				}
@@ -209,13 +235,24 @@ public class COM : MonoBehaviour
 					output2 += readMessage;
 				}
 			}
-	
+
 			if (x != 15)
 			{
 				readMessage = serialPort.ReadLine();
 			}
 		}
 		hasReadFirstArray = true;
+	}
+
+	private void Reset()
+	{
+		amountOfLinesNotToRead = 6;
+		currentMessage = 0;
+		output = string.Empty;
+		output2 = string.Empty;
+		hasReadFirstArray = false;
+
+		continueReading = true;
 	}
 
 	private void Start ()

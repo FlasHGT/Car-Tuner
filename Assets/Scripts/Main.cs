@@ -317,6 +317,8 @@ public class Main : MonoBehaviour
 		}
 
 		Reset();
+
+		com.serialPort.Close();
 	}
 
 	public void ReadComport ()
@@ -354,6 +356,8 @@ public class Main : MonoBehaviour
 		}
 
 		Reset();
+
+		com.serialPort.Close();
 	}
 
 	private void Start()
