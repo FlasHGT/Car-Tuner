@@ -12,7 +12,7 @@ public class Main : MonoBehaviour
 {
 	[HideInInspector] public InputField currentlyActiveInputField = null;
 
-	private string[] message = {"a", "b"}; // Move this to COM.cs as exportMessage
+	private string[] message = { "a", "b", "u" }; // Move this to COM.cs as exportMessage
 	private int currentMessage = 0; // Remove this
 
 	[SerializeField] Toggle xToggle = null;
@@ -41,7 +41,7 @@ public class Main : MonoBehaviour
 
 	public void Export(string exportPath)
 	{
-		if(xToggle.isOn && yToggle.isOn)
+		if (xToggle.isOn && yToggle.isOn)
 		{
 			for (int x = 0; x < dataTableX.Length; x++)
 			{
@@ -72,15 +72,15 @@ public class Main : MonoBehaviour
 
 			Reset();
 		}
-		else 
+		else
 		{
-			if(!xToggle.isOn && !yToggle.isOn)
+			if (!xToggle.isOn && !yToggle.isOn)
 			{
 				Debug.Log("Error"); // Make a pop up
 				return;
 			}
 
-			if(xToggle.isOn)
+			if (xToggle.isOn)
 			{
 				currentTable = dataTableX;
 			}
@@ -227,7 +227,6 @@ public class Main : MonoBehaviour
 		}
 	}
 
-
 	public void WriteComport()
 	{
 		//for (int x = 0; x < dataTableX.Length; x++)
@@ -290,42 +289,85 @@ public class Main : MonoBehaviour
 			currentMessage++;
 		}
 
-		for (int y = 0; y < 16; y++)
+		const byte SOH = 1;  // Start of Header
+		const byte EOT = 4;  // End of Transmission
+
+		const byte dataSize = 128;
+
+		int packetNumber = 0;
+		int invertedPacketNumber = 255;
+		byte[] data = new byte[dataSize];
+		int checkSum = 0;
+
+		FileStream fileStream = new FileStream(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\sample2.csv", FileMode.Open, FileAccess.Read);
+
+		int fileReadCount;
+		do
 		{
-			for (int x = 0; x < 16; x++)
-			{
-				com.serialPort.Write("e");
-				output = "0 " + "" + x + " " + "" + y + " " + "" + dataTableX[inputFieldSpot].text;
-				com.serialPort.Write(output);
-				com.serialPort.Write("\r\n"); // ENTER
-				inputFieldSpot++;
-			}
-		}
+			fileReadCount = fileStream.Read(data, 0, dataSize);
+			if (fileReadCount == 0) break;
+			if (fileReadCount != dataSize)
+				for (int i = fileReadCount; i < dataSize; i++)
+					data[i] = 0;
 
-		Reset();
+			packetNumber++;
+			if (packetNumber > 255)
+				packetNumber -= 256;
 
-		for (int y = 0; y < 16; y++)
-		{
-			for (int x = 0; x < 16; x++)
-			{
-				com.serialPort.Write("e");
-				output = "1 " + "" + x + " " + "" + y + " " + "" + dataTableY[inputFieldSpot].text;
-				com.serialPort.Write(output);
-				com.serialPort.Write("\r\n"); // ENTER
-				inputFieldSpot++;
-			}
-		}
+			invertedPacketNumber = 255 - packetNumber;
 
-		Reset();
+			checkSum = 1;
+			checkSum += packetNumber;
+			checkSum += invertedPacketNumber;
+			for (int i = 0; i < dataSize; i++)
+				checkSum += data[i];
+
+			com.serialPort.Write(new byte[] { SOH }, 0, 1);
+			com.serialPort.Write(new byte[] { (byte)packetNumber }, 0, 1);
+			com.serialPort.Write(new byte[] { (byte)invertedPacketNumber }, 0, 1);
+			com.serialPort.Write(data, 0, dataSize);
+			com.serialPort.Write(new byte[] { (byte)checkSum }, 0, 1);
+
+		} while (dataSize == fileReadCount);
+
+		com.serialPort.Write(new byte[] { EOT }, 0, 1);
+
+		//for (int y = 0; y < 16; y++)
+		//{
+		//	for (int x = 0; x < 16; x++)
+		//	{
+		//		com.serialPort.Write("e");
+		//		output = "0 " + "" + x + " " + "" + y + " " + "" + dataTableX[inputFieldSpot].text;
+		//		com.serialPort.Write(output);
+		//		com.serialPort.Write("\r\n"); // ENTER
+		//		inputFieldSpot++;
+		//	}
+		//}
+
+		//Reset();
+
+		//for (int y = 0; y < 16; y++)
+		//{
+		//	for (int x = 0; x < 16; x++)
+		//	{
+		//		com.serialPort.Write("e");
+		//		output = "1 " + "" + x + " " + "" + y + " " + "" + dataTableY[inputFieldSpot].text;
+		//		com.serialPort.Write(output);
+		//		com.serialPort.Write("\r\n"); // ENTER
+		//		inputFieldSpot++;
+		//	}
+		//}
+
+		//Reset();
 
 		com.serialPort.Close();
 	}
 
-	public void ReadComport ()
+	public void ReadComport()
 	{
 		com.ManualStart();
 
-		foreach(char c in com.output.ToCharArray())
+		foreach (char c in com.output.ToCharArray())
 		{
 			if (c.ToString() == ",")
 			{

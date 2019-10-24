@@ -9,11 +9,9 @@ public class RowColSelector : MonoBehaviour
 
 	[SerializeField] InputField[] inputFields = null;
 
-	private Button button = null;
-
 	public void ActivateInputField ()
 	{
-		if(!valueInputField.gameObject.activeInHierarchy)
+		if (!valueInputField.gameObject.activeInHierarchy)
 		{
 			valueInputField.gameObject.SetActive(true);
 
@@ -22,7 +20,7 @@ public class RowColSelector : MonoBehaviour
 				_field.GetComponent<Selectable>().selectedBySelector = true;
 				_field.GetComponent<Image>().color = Color.yellow;
 			}
-		}    
+		}
 	}
 
 	public void ApplyValue ()
@@ -38,11 +36,6 @@ public class RowColSelector : MonoBehaviour
 
 		valueInputField.text = string.Empty;
 		valueInputField.gameObject.SetActive(false);
-	}
-
-	private void Start ()
-	{
-		button = GetComponent<Button>();
 	}
 
 	private void Update()

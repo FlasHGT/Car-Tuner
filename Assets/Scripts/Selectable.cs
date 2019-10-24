@@ -13,6 +13,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	public static HashSet<Selectable> allMySelectables = new HashSet<Selectable>();
 	public static HashSet<Selectable> currentlySelected = new HashSet<Selectable>();
 
+	private bool focused = false;
 	private Image image = null;
 	private InputField inputField = null;
 	private Color startingColor;
@@ -70,6 +71,18 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 	private void Update ()
 	{
+		if (Input.GetKeyDown(KeyCode.Return) && image.color == Color.yellow && !inputField.isFocused && !focused)
+		{
+			inputField.ActivateInputField();
+			inputField.Select();
+			focused = true;
+		}
+		else if(Input.GetKeyDown(KeyCode.Return) && inputField.isFocused || !focused) 
+		{
+			inputField.DeactivateInputField();
+			focused = false;
+		}
+
 		if(!selectedBySelector && main.currentlyActiveInputField && main.currentlyActiveInputField.gameObject.activeInHierarchy)
 		{
 			image.color = startingColor;
@@ -90,7 +103,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 			inputField.interactable = true;
 		}
 
-		if (Input.GetKeyDown(KeyCode.UpArrow) && image.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy)
+		if (Input.GetKeyDown(KeyCode.UpArrow) && image.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && inputField.isFocused)
 		{
 			float newFloat = 0f;
 
@@ -106,7 +119,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 			inputField.text = newFloat.ToString();
 			inputField.textComponent.text = newFloat.ToString();
 		}
-		else if (Input.GetKeyDown(KeyCode.DownArrow) && image.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy)
+		else if (Input.GetKeyDown(KeyCode.DownArrow) && image.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && inputField.isFocused)
 		{
 			float newFloat = 0f;
 
