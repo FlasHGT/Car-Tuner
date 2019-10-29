@@ -5,17 +5,13 @@ using System.Collections.Generic;
 
 public class COM : MonoBehaviour
 {
-	//public SerialPort serialPort = new SerialPort("COM4", 1000000, Parity.None, 8, StopBits.One);
 	public SerialPort serialPort = new SerialPort();
 
 	[HideInInspector] public string output = string.Empty;
 	[HideInInspector] public string output2 = string.Empty;
 
-	[SerializeField] InputField baudRate = null;
-	[SerializeField] InputField dataBits = null;
+	[SerializeField] Image connectImage = null;
 	[SerializeField] Dropdown portName = null;
-	[SerializeField] Dropdown parity = null;
-	[SerializeField] Dropdown stopBits = null;
 
 	private string[] importMessage = {"a", "b", "d"};
 	private string readMessage = string.Empty;
@@ -25,16 +21,16 @@ public class COM : MonoBehaviour
 	private bool continueReading = true;
 
 	private List<string> portNames = new List<string>();
-	private List<string> parityOptions = new List<string>() { Parity.Even.ToString(), Parity.Mark.ToString(), Parity.None.ToString(), Parity.Odd.ToString(), Parity.Space.ToString() };
-	private List<string> stopBitOptions = new List<string>() { StopBits.None.ToString(), StopBits.One.ToString(), StopBits.OnePointFive.ToString(), StopBits.Two.ToString() };
 
 	public void SaveSettings()
 	{
 		serialPort.PortName = portNames[portName.value];
-		serialPort.BaudRate = int.Parse(baudRate.text);
-		serialPort.DataBits = int.Parse(dataBits.text);
-		SetParity();
-		SetStopBits();
+		serialPort.BaudRate = 1000000;
+		serialPort.DataBits = 8;
+		serialPort.Parity = Parity.None;
+		serialPort.StopBits = StopBits.One;
+
+		connectImage.color = Color.green; // Change it to red if serialport doesn't create a connection
 	}
 
 	public void ChangeProfile (int i)
@@ -258,8 +254,6 @@ public class COM : MonoBehaviour
 	private void Start ()
 	{
 		FillComPortNames();
-		FillParityOptions();
-		FillStopBitOptions();
 	}
 
 	private void FillComPortNames ()
@@ -272,62 +266,5 @@ public class COM : MonoBehaviour
 		}
 
 		portName.AddOptions(portNames);
-	}
-
-	private void FillParityOptions ()
-	{
-		parity.ClearOptions();
-		parity.AddOptions(parityOptions);
-	}
-
-	private void FillStopBitOptions ()
-	{
-		stopBits.ClearOptions();
-		stopBits.AddOptions(stopBitOptions);
-	}
-
-	private void SetParity ()
-	{
-		switch (parity.value)
-		{
-			case 0:
-				serialPort.Parity = Parity.Even;
-				break;
-			case 1:
-				serialPort.Parity = Parity.Mark;
-				break;
-			case 2:
-				serialPort.Parity = Parity.None;
-				break;
-			case 3:
-				serialPort.Parity = Parity.Odd;
-				break;
-			case 4:
-				serialPort.Parity = Parity.Space;
-				break;
-			default:
-				break;
-		}
-	}
-
-	private void SetStopBits ()
-	{
-		switch (stopBits.value)
-		{
-			case 0:
-				serialPort.StopBits = StopBits.None;
-				break;
-			case 1:
-				serialPort.StopBits = StopBits.One;
-				break;
-			case 2:
-				serialPort.StopBits = StopBits.OnePointFive;
-				break;
-			case 3:
-				serialPort.StopBits = StopBits.Two;
-				break;
-			default:
-				break;
-		}
 	}
 }

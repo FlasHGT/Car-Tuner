@@ -10,10 +10,10 @@ using System.IO.Ports;
 
 public class Main : MonoBehaviour
 {
-	[HideInInspector] public InputField currentlyActiveInputField = null;
-
 	private string[] message = { "a", "b", "u" }; // Move this to COM.cs as exportMessage
 	private int currentMessage = 0; // Remove this
+
+	[SerializeField] GameObject EditValuesPanel = null;
 
 	[SerializeField] Toggle xToggle = null;
 	[SerializeField] Toggle yToggle = null;
@@ -36,7 +36,10 @@ public class Main : MonoBehaviour
 
 	public void Deselect()
 	{
-		Selectable.DeselectAll(eventData);
+		if (!EditValuesPanel.activeInHierarchy)
+		{
+			Selectable.DeselectAll(eventData);
+		}
 	}
 
 	public void Export(string exportPath)
@@ -278,16 +281,16 @@ public class Main : MonoBehaviour
 
 		//Reset();
 
-		if (!com.serialPort.IsOpen)
-		{
-			com.serialPort.Open();
-		}
+		//if (!com.serialPort.IsOpen)
+		//{
+		//	com.serialPort.Open();
+		//}
 
-		while (currentMessage < message.Length)
-		{
-			com.serialPort.Write(message[currentMessage]);
-			currentMessage++;
-		}
+		//while (currentMessage < message.Length)
+		//{
+		//	com.serialPort.Write(message[currentMessage]);
+		//	currentMessage++;
+		//}
 
 		const byte SOH = 1;  // Start of Header
 		const byte EOT = 4;  // End of Transmission
@@ -322,15 +325,22 @@ public class Main : MonoBehaviour
 			for (int i = 0; i < dataSize; i++)
 				checkSum += data[i];
 
-			com.serialPort.Write(new byte[] { SOH }, 0, 1);
-			com.serialPort.Write(new byte[] { (byte)packetNumber }, 0, 1);
-			com.serialPort.Write(new byte[] { (byte)invertedPacketNumber }, 0, 1);
-			com.serialPort.Write(data, 0, dataSize);
-			com.serialPort.Write(new byte[] { (byte)checkSum }, 0, 1);
+			//com.serialPort.Write(new byte[] { SOH }, 0, 1);
+			//com.serialPort.Write(new byte[] { (byte)packetNumber }, 0, 1);
+			//com.serialPort.Write(new byte[] { (byte)invertedPacketNumber }, 0, 1);
+			//com.serialPort.Write(data, 0, dataSize);
+			//com.serialPort.Write(new byte[] { (byte)checkSum }, 0, 1);
+			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { SOH });
+			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { (byte)packetNumber });
+			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { (byte)invertedPacketNumber });
+			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", data);
+			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { (byte)checkSum });
+
 
 		} while (dataSize == fileReadCount);
 
-		com.serialPort.Write(new byte[] { EOT }, 0, 1);
+		//com.serialPort.Write(new byte[] { EOT }, 0, 1);
+		File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { EOT });
 
 		//for (int y = 0; y < 16; y++)
 		//{

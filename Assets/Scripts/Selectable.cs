@@ -6,46 +6,46 @@ using UnityEngine.UI;
 
 public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, IDeselectHandler
 {
-	public InputField mainInputField = null;
-	public bool selectedBySelector = false;
-	public Main main = null;
-
 	public static HashSet<Selectable> allMySelectables = new HashSet<Selectable>();
 	public static HashSet<Selectable> currentlySelected = new HashSet<Selectable>();
 
+	// Main object
+	[SerializeField] InputField mainInputField = null;
+
+	// This object
 	private bool focused = false;
-	private Image image = null;
-	private InputField inputField = null;
+	private Image thisImage = null;
+	private InputField thisInputField = null;
 	private Color startingColor;
 
-	private void Awake ()
+	private void Awake()
 	{
 		allMySelectables.Add(this);
 	}
 
-	private void Start ()
+	private void Start()
 	{
-		image = GetComponent<Image>();
-		inputField = GetComponent<InputField>();
-		startingColor = image.color;
+		thisImage = GetComponent<Image>();
+		thisInputField = GetComponent<InputField>();
+		startingColor = thisImage.color;
 	}
 
 	public void OnDeselect(BaseEventData eventData)
 	{
-		if(!selectedBySelector && !mainInputField.gameObject.activeInHierarchy && !Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
+		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
 		{
-			image.color = Color.white;
+			thisImage.color = Color.white;
 		}
 	}
 
 	public void OnPointerClick(PointerEventData eventData)
 	{
-		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
+		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl) && !mainInputField.gameObject.activeInHierarchy)
 		{
 			DeselectAll(eventData);
 		}
 
-		if(!mainInputField.gameObject.activeInHierarchy)
+		if (!mainInputField.gameObject.activeInHierarchy)
 		{
 			OnSelect(eventData);
 		}
@@ -53,87 +53,106 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 	public void OnSelect(BaseEventData eventData)
 	{
-		if(!mainInputField.gameObject.activeInHierarchy)
+		if (!mainInputField.gameObject.activeInHierarchy)
 		{
-			currentlySelected.Add(this);
-			image.color = Color.yellow;
+			if (!currentlySelected.Contains(this))
+			{
+				currentlySelected.Add(this);
+				EditValues.allSelectedInputFields.Add(thisInputField);
+			}
+
+			thisImage.color = Color.yellow;
 		}
 	}
 
-	public static void DeselectAll (BaseEventData eventData)
+	public static void DeselectAll(BaseEventData eventData)
 	{
 		foreach (Selectable selectable in currentlySelected)
 		{
 			selectable.OnDeselect(eventData);
 		}
+
+		EditValues.allSelectedInputFields.Clear();
 		currentlySelected.Clear();
 	}
 
-	private void Update ()
+	private void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.Return) && image.color == Color.yellow && !inputField.isFocused && !focused)
+		if(currentlySelected.Contains(this))
 		{
-			inputField.ActivateInputField();
-			inputField.Select();
-			focused = true;
+			thisImage.color = Color.yellow;
 		}
-		else if(Input.GetKeyDown(KeyCode.Return) && inputField.isFocused || !focused) 
+		else
 		{
-			inputField.DeactivateInputField();
-			focused = false;
-		}
-
-		if(!selectedBySelector && main.currentlyActiveInputField && main.currentlyActiveInputField.gameObject.activeInHierarchy)
-		{
-			image.color = startingColor;
+			thisImage.color = startingColor;
 		}
 
 		if (mainInputField.gameObject.activeInHierarchy)
 		{
-			if(image.color == Color.yellow && !selectedBySelector)
-			{
-				image.color = startingColor;
-			}
-
-			inputField.interactable = false;
+			thisInputField.interactable = false;
 		}
-		else if(image.color != Color.yellow)
+		else
 		{
-			image.color = startingColor;
-			inputField.interactable = true;
+			thisInputField.interactable = true;
 		}
 
-		if (Input.GetKeyDown(KeyCode.UpArrow) && image.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && inputField.isFocused)
+		//if (currentlySelected.Count == 1)
+		//{
+		//	if (Input.GetKeyDown(KeyCode.Return) && thisImage.color == Color.yellow && !thisInputField.isFocused && !focused)
+		//	{
+		//		thisInputField.ActivateInputField();
+		//		thisInputField.Select();
+		//		focused = true;
+		//	}
+		//	else if (Input.GetKeyDown(KeyCode.Return) && thisInputField.isFocused || !focused)
+		//	{
+		//		thisInputField.DeactivateInputField();
+		//		focused = false;
+		//	}
+		//}
+
+		if (float.Parse(thisInputField.text) < 0)
+		{
+			thisInputField.text = "0";
+		}
+		else if (float.Parse(thisInputField.text) > 500)
+		{
+			thisInputField.text = "500";
+		}
+
+		if (Input.GetKeyDown(KeyCode.UpArrow) && thisImage.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && thisInputField.isFocused
+			|| Input.GetKeyDown(KeyCode.UpArrow) && thisImage.color == Color.yellow && currentlySelected.Count >= 2)
 		{
 			float newFloat = 0f;
 
-			if (inputField.text == string.Empty)
+			if (thisInputField.text == string.Empty)
 			{
-				newFloat = 0f + 0.1f;
+				newFloat = 0f + 1f;
 			}
 			else
 			{
-				newFloat = float.Parse(inputField.text) + 0.1f;
+				newFloat = float.Parse(thisInputField.text) + 1f;
 			}
 
-			inputField.text = newFloat.ToString();
-			inputField.textComponent.text = newFloat.ToString();
+			thisInputField.text = newFloat.ToString();
+			thisInputField.textComponent.text = newFloat.ToString();
 		}
-		else if (Input.GetKeyDown(KeyCode.DownArrow) && image.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && inputField.isFocused)
+		else if (Input.GetKeyDown(KeyCode.DownArrow) && thisImage.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && thisInputField.isFocused
+				 || Input.GetKeyDown(KeyCode.DownArrow) && thisImage.color == Color.yellow && currentlySelected.Count >= 2)
 		{
 			float newFloat = 0f;
 
-			if (inputField.text == string.Empty)
+			if (thisInputField.text == string.Empty)
 			{
-				newFloat = 0f - 0.1f;
+				newFloat = 0f - 1f;
 			}
 			else
 			{
-				newFloat = float.Parse(inputField.text) - 0.1f;
+				newFloat = float.Parse(thisInputField.text) - 1f;
 			}
 
-			inputField.text = newFloat.ToString();
-			inputField.textComponent.text = newFloat.ToString();
+			thisInputField.text = newFloat.ToString();
+			thisInputField.textComponent.text = newFloat.ToString();
 		}
 	}
 }

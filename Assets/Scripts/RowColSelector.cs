@@ -5,30 +5,28 @@ using UnityEngine.UI;
 
 public class RowColSelector : MonoBehaviour
 {
-	[SerializeField] RowColInput rowColInput = null;
 	[SerializeField] List<InputField> inputFields = null;
 
 	private Button button;
 
-	public void ActivateInputField()
+	public void ActivateInputFields()
 	{
-		if (!rowColInput.gameObject.activeInHierarchy)
+		foreach (InputField i in inputFields)
 		{
-			rowColInput.gameObject.SetActive(true);
-		}
+			Selectable selectable = i.GetComponent<Selectable>();
 
-		foreach (InputField _field in inputFields)
-		{
-			_field.GetComponent<Selectable>().selectedBySelector = true;
-			_field.GetComponent<Image>().color = Color.yellow;
+			if(!Selectable.currentlySelected.Contains(selectable))
+			{
+				Selectable.currentlySelected.Add(selectable);
+				EditValues.allSelectedInputFields.Add(i);
+				i.GetComponent<Image>().color = Color.yellow;
+			}
 		}
-
-		rowColInput.allSelectedInputFields.AddRange(inputFields);
 	}
 
 	private void Start ()
 	{
 		button = GetComponent<Button>();
-		button.onClick.AddListener(ActivateInputField);
+		button.onClick.AddListener(ActivateInputFields);
 	}
 }
