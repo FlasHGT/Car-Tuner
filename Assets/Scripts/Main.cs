@@ -7,6 +7,8 @@ using System.Threading;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using System.IO.Ports;
+using XModemProtocol;
+using System.Linq;
 
 public class Main : MonoBehaviour
 {
@@ -232,145 +234,57 @@ public class Main : MonoBehaviour
 
 	public void WriteComport()
 	{
-		//for (int x = 0; x < dataTableX.Length; x++)
-		//{
-		//	output += dataTableX[x].text + ",";
-
-		//	if ((x % inputFieldOffset) == 0 && x != 0)
-		//	{
-		//		output += "\n";
-		//		inputFieldOffset += 16;
-		//	}
-		//}
-
-		//inputFieldOffset = 15;
-		//output += "\n";
-
-		//for (int x = 0; x < dataTableY.Length; x++)
-		//{
-		//	output += dataTableY[x].text + ",";
-
-		//	if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
-		//	{
-		//		output += "\n";
-		//		inputFieldOffset += 16;
-		//	}
-		//}
-
-		//com.serialPort.ReadTimeout = 1000;
-		//com.serialPort.WriteTimeout = 1000;
-
-		//if (!com.serialPort.IsOpen)
-		//{
-		//	com.serialPort.Open();
-		//}
-
-		//while (currentMessage < message.Length)
-		//{
-		//	com.serialPort.Write(message[currentMessage]);
-		//	currentMessage++;
-		//}
-
-		//currentMessage = 0;
-
-		//while (currentMessage < 30)
-		//{
-		//	Debug.Log(com.serialPort.ReadLine());
-		//	currentMessage++;
-		//}
-
-		//Reset();
-
-		//if (!com.serialPort.IsOpen)
-		//{
-		//	com.serialPort.Open();
-		//}
-
-		//while (currentMessage < message.Length)
-		//{
-		//	com.serialPort.Write(message[currentMessage]);
-		//	currentMessage++;
-		//}
-
-		const byte SOH = 1;  // Start of Header
-		const byte EOT = 4;  // End of Transmission
-
-		const byte dataSize = 128;
-
-		int packetNumber = 0;
-		int invertedPacketNumber = 255;
-		byte[] data = new byte[dataSize];
-		int checkSum = 0;
-
-		FileStream fileStream = new FileStream(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\sample2.csv", FileMode.Open, FileAccess.Read);
-
-		int fileReadCount;
-		do
+		for (int x = 0; x < dataTableX.Length; x++)
 		{
-			fileReadCount = fileStream.Read(data, 0, dataSize);
-			if (fileReadCount == 0) break;
-			if (fileReadCount != dataSize)
-				for (int i = fileReadCount; i < dataSize; i++)
-					data[i] = 0;
+			output += dataTableX[x].text + ",";
 
-			packetNumber++;
-			if (packetNumber > 255)
-				packetNumber -= 256;
+			if ((x % inputFieldOffset) == 0 && x != 0)
+			{
+				output += "\n";
+				inputFieldOffset += 16;
+			}
+		}
 
-			invertedPacketNumber = 255 - packetNumber;
+		inputFieldOffset = 15;
+		output += "\n";
 
-			checkSum = 1;
-			checkSum += packetNumber;
-			checkSum += invertedPacketNumber;
-			for (int i = 0; i < dataSize; i++)
-				checkSum += data[i];
+		for (int x = 0; x < dataTableY.Length; x++)
+		{
+			output += dataTableY[x].text + ",";
 
-			//com.serialPort.Write(new byte[] { SOH }, 0, 1);
-			//com.serialPort.Write(new byte[] { (byte)packetNumber }, 0, 1);
-			//com.serialPort.Write(new byte[] { (byte)invertedPacketNumber }, 0, 1);
-			//com.serialPort.Write(data, 0, dataSize);
-			//com.serialPort.Write(new byte[] { (byte)checkSum }, 0, 1);
-			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { SOH });
-			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { (byte)packetNumber });
-			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { (byte)invertedPacketNumber });
-			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", data);
-			File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { (byte)checkSum });
+			if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
+			{
+				output += "\n";
+				inputFieldOffset += 16;
+			}
+		}
+		
+		byte[] bytes = Encoding.ASCII.GetBytes(output);
 
+		var xmodem = new XModemCommunicator();
+		xmodem.Port = com.serialPort;
+		xmodem.Data = bytes;
 
-		} while (dataSize == fileReadCount);
+		// Subscribe to events.
+		xmodem.Completed += (s, e) => {
+			Debug.Log($"Operation completed.\n");
+		};
+		xmodem.Aborted += (s, e) => {
+			Debug.Log("Operation Aborted.\n");
+		};
+		com.serialPort.Open();
+		com.serialPort.Write("u");
+		xmodem.Send();
 
-		//com.serialPort.Write(new byte[] { EOT }, 0, 1);
-		File.WriteAllBytes(@"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\test.csv", new byte[] { EOT });
+		if (xmodem.State != XModemStates.Idle)
+		{
+			xmodem.CancelOperation();
+		}
 
-		//for (int y = 0; y < 16; y++)
-		//{
-		//	for (int x = 0; x < 16; x++)
-		//	{
-		//		com.serialPort.Write("e");
-		//		output = "0 " + "" + x + " " + "" + y + " " + "" + dataTableX[inputFieldSpot].text;
-		//		com.serialPort.Write(output);
-		//		com.serialPort.Write("\r\n"); // ENTER
-		//		inputFieldSpot++;
-		//	}
-		//}
-
-		//Reset();
-
-		//for (int y = 0; y < 16; y++)
-		//{
-		//	for (int x = 0; x < 16; x++)
-		//	{
-		//		com.serialPort.Write("e");
-		//		output = "1 " + "" + x + " " + "" + y + " " + "" + dataTableY[inputFieldSpot].text;
-		//		com.serialPort.Write(output);
-		//		com.serialPort.Write("\r\n"); // ENTER
-		//		inputFieldSpot++;
-		//	}
-		//}
-
-		//Reset();
-
+		// Dispose of port.
 		com.serialPort.Close();
+
+		//com.serialPort.Close();
 	}
 
 	public void ReadComport()
