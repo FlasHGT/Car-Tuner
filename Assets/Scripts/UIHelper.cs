@@ -10,7 +10,6 @@ public class UIHelper : MonoBehaviour
 
     [Header("Tabs to Disable")]
     public GameObject tab1;
-    public GameObject tab2;
 
     private void Update()
     {
@@ -31,6 +30,5 @@ public class UIHelper : MonoBehaviour
     {
             checkActive.SetActive(true);
             tab1.SetActive(false);
-            tab2.SetActive(false);
     }
 }
