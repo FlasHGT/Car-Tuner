@@ -71,7 +71,12 @@ public class EditValues : MonoBehaviour
 	// Update is called once per frame
 	private void Update()
     {
-		if (Input.GetKeyDown(KeyCode.Return) && readyToApply)
+		if (inputField.isFocused)
+		{
+			readyToApply = true;
+		}
+
+		if (Input.GetKeyDown(KeyCode.Return) && readyToApply && inputField.text != string.Empty)
 		{
 			ApplyValue();
 			readyToApply = false;
@@ -80,7 +85,7 @@ public class EditValues : MonoBehaviour
 		if (Selectable.currentlySelected.Count != 0 && Input.GetKeyDown(KeyCode.Return) && !panel.activeInHierarchy)
 		{
 			panel.SetActive(true);
-			readyToApply = true;
+			inputField.ActivateInputField();
 		}
 
 		if (inputField.gameObject.activeInHierarchy && Input.GetKeyDown(KeyCode.UpArrow) && inputField.isFocused)

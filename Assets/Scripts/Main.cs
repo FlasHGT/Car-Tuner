@@ -12,9 +12,6 @@ using System.Linq;
 
 public class Main : MonoBehaviour
 {
-	private string[] message = { "a", "b", "u" }; // Move this to COM.cs as exportMessage
-	private int currentMessage = 0; // Remove this
-
 	[SerializeField] GameObject EditValuesPanel = null;
 
 	[SerializeField] Toggle xToggle = null;
@@ -23,6 +20,7 @@ public class Main : MonoBehaviour
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
+	[SerializeField] EventSystem eventSystem = null;
 	private BaseEventData eventData = null;
 
 	private COM com = null;
@@ -272,6 +270,7 @@ public class Main : MonoBehaviour
 		xmodem.Aborted += (s, e) => {
 			Debug.Log("Operation Aborted.\n");
 		};
+
 		com.serialPort.Open();
 		com.serialPort.Write("u");
 		xmodem.Send();
@@ -283,8 +282,6 @@ public class Main : MonoBehaviour
 
 		// Dispose of port.
 		com.serialPort.Close();
-
-		//com.serialPort.Close();
 	}
 
 	public void ReadComport()
@@ -329,6 +326,18 @@ public class Main : MonoBehaviour
 	private void Start()
 	{
 		com = GetComponent<COM>();
+	}
+
+	private void Update()
+	{
+		if (Selectable.currentlySelected.Count >= 2)
+		{
+			eventSystem.sendNavigationEvents = false;
+		}
+		else
+		{
+			eventSystem.sendNavigationEvents = true;
+		}
 	}
 
 	private void Reset()

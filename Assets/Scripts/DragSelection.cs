@@ -5,11 +5,10 @@ using UnityEngine.UI;
 
 public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
-	public Main main = null;
-
 	[SerializeField] Image selectionBoxImage = null;
 
 	private Image image = null;
+	private float temps = 0f;
 	private Vector2 startPosition;
 	private Rect selectionRect;
 
@@ -20,7 +19,7 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 			Selectable.DeselectAll(new BaseEventData(EventSystem.current));
 		}
 
-		//selectionBoxImage.gameObject.SetActive(true);
+		selectionBoxImage.gameObject.SetActive(true);
 		startPosition = eventData.position;
 		selectionRect = new Rect();
 	}
@@ -49,13 +48,13 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 			selectionRect.yMax = eventData.position.y;
 		}
 
-		//selectionBoxImage.rectTransform.offsetMin = selectionRect.min;
-		//selectionBoxImage.rectTransform.offsetMax = selectionRect.max;
+		selectionBoxImage.rectTransform.offsetMin = selectionRect.min;
+		selectionBoxImage.rectTransform.offsetMax = selectionRect.max;
 	}
 
 	public void OnEndDrag(PointerEventData eventData)
 	{
-		//selectionBoxImage.gameObject.SetActive(false);
+		selectionBoxImage.gameObject.SetActive(false);
 
 		foreach (Selectable selectable in Selectable.allMySelectables)
 		{
@@ -64,6 +63,8 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 				selectable.OnSelect(eventData);
 			}
 		}
+
+		image.raycastTarget = false;
 	}
 
 	public void OnPointerClick(PointerEventData eventData)
@@ -99,7 +100,7 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 			ExecuteEvents.Execute<IPointerClickHandler>(nextObject, eventData, (x, y) => { x.OnPointerClick((PointerEventData)y); });
 		}
 	}
-
+	
 	private void Start ()
 	{
 		image = GetComponent<Image>();
@@ -107,13 +108,14 @@ public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
 	private void Update ()
 	{
-		if(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+		if (Input.GetMouseButtonDown(0))
 		{
-			image.enabled = true;
+			temps = Time.time;
 		}
-		else
+
+		if (Input.GetMouseButton(0) && (Time.time - temps) > 0.2)
 		{
-			image.enabled = false;
+			image.raycastTarget = true;
 		}
 	}
 }

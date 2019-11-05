@@ -13,7 +13,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	[SerializeField] InputField mainInputField = null;
 
 	// This object
-	private bool focused = false;
+	private bool dontChangeValue = false;
 	private Image thisImage = null;
 	private InputField thisInputField = null;
 	private Color startingColor;
@@ -34,6 +34,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	{
 		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
 		{
+			dontChangeValue = false;
 			thisImage.color = Color.white;
 		}
 	}
@@ -57,11 +58,18 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 		{
 			if (!currentlySelected.Contains(this))
 			{
+				if (Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow) || Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.LeftArrow))
+				{
+					dontChangeValue = true;
+					currentlySelected.Clear();
+					EditValues.allSelectedInputFields.Clear();
+				}
+
 				currentlySelected.Add(this);
 				EditValues.allSelectedInputFields.Add(thisInputField);
-			}
 
-			thisImage.color = Color.yellow;
+				thisImage.color = Color.yellow;
+			}
 		}
 	}
 
@@ -78,7 +86,9 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 	private void Update()
 	{
-		if(currentlySelected.Contains(this))
+		thisInputField.DeactivateInputField();
+
+		if (currentlySelected.Contains(this))
 		{
 			thisImage.color = Color.yellow;
 		}
@@ -96,21 +106,6 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 			thisInputField.interactable = true;
 		}
 
-		//if (currentlySelected.Count == 1)
-		//{
-		//	if (Input.GetKeyDown(KeyCode.Return) && thisImage.color == Color.yellow && !thisInputField.isFocused && !focused)
-		//	{
-		//		thisInputField.ActivateInputField();
-		//		thisInputField.Select();
-		//		focused = true;
-		//	}
-		//	else if (Input.GetKeyDown(KeyCode.Return) && thisInputField.isFocused || !focused)
-		//	{
-		//		thisInputField.DeactivateInputField();
-		//		focused = false;
-		//	}
-		//}
-
 		if (float.Parse(thisInputField.text) < 0)
 		{
 			thisInputField.text = "0";
@@ -120,39 +115,40 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 			thisInputField.text = "500";
 		}
 
-		if (Input.GetKeyDown(KeyCode.UpArrow) && thisImage.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && thisInputField.isFocused
-			|| Input.GetKeyDown(KeyCode.UpArrow) && thisImage.color == Color.yellow && currentlySelected.Count >= 2)
+		if (!dontChangeValue)
 		{
-			float newFloat = 0f;
-
-			if (thisInputField.text == string.Empty)
+			if (Input.GetKeyDown(KeyCode.UpArrow) && thisImage.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2)
 			{
-				newFloat = 0f + 1f;
-			}
-			else
-			{
-				newFloat = float.Parse(thisInputField.text) + 1f;
-			}
+				float newFloat = 0f;
 
-			thisInputField.text = newFloat.ToString();
-			thisInputField.textComponent.text = newFloat.ToString();
-		}
-		else if (Input.GetKeyDown(KeyCode.DownArrow) && thisImage.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && thisInputField.isFocused
-				 || Input.GetKeyDown(KeyCode.DownArrow) && thisImage.color == Color.yellow && currentlySelected.Count >= 2)
-		{
-			float newFloat = 0f;
+				if (thisInputField.text == string.Empty)
+				{
+					newFloat = 0f + 1f;
+				}
+				else
+				{
+					newFloat = float.Parse(thisInputField.text) + 1f;
+				}
 
-			if (thisInputField.text == string.Empty)
-			{
-				newFloat = 0f - 1f;
+				thisInputField.text = newFloat.ToString();
+				thisInputField.textComponent.text = newFloat.ToString();
 			}
-			else
+			else if (Input.GetKeyDown(KeyCode.DownArrow) && thisImage.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2)
 			{
-				newFloat = float.Parse(thisInputField.text) - 1f;
-			}
+				float newFloat = 0f;
 
-			thisInputField.text = newFloat.ToString();
-			thisInputField.textComponent.text = newFloat.ToString();
+				if (thisInputField.text == string.Empty)
+				{
+					newFloat = 0f - 1f;
+				}
+				else
+				{
+					newFloat = float.Parse(thisInputField.text) - 1f;
+				}
+
+				thisInputField.text = newFloat.ToString();
+				thisInputField.textComponent.text = newFloat.ToString();
+			}
 		}
 	}
 }

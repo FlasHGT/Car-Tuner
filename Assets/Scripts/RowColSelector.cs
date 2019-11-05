@@ -6,8 +6,9 @@ using UnityEngine.UI;
 public class RowColSelector : MonoBehaviour
 {
 	[SerializeField] List<InputField> inputFields = null;
+	[SerializeField] GameObject mainPanel = null;
 
-	private Button button;
+	private Button button = null;
 
 	public void ActivateInputFields()
 	{
@@ -28,5 +29,17 @@ public class RowColSelector : MonoBehaviour
 	{
 		button = GetComponent<Button>();
 		button.onClick.AddListener(ActivateInputFields);
+	}
+
+	private void Update ()
+	{
+		if (mainPanel.activeInHierarchy)
+		{
+			button.interactable = false;
+		}
+		else
+		{
+			button.interactable = true;
+		}
 	}
 }
