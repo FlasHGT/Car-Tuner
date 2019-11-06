@@ -297,7 +297,10 @@ public class Main : MonoBehaviour
 		{
 			if (c.ToString() == ",")
 			{
+				if (output == null || output == "" || output == "\n") continue;
 				dataTableX[inputFieldSpot].text = output;
+				Debug.Log(output);
+				Debug.Log(inputFieldSpot);
 				output = string.Empty;
 				inputFieldSpot++;
 			}
@@ -313,7 +316,10 @@ public class Main : MonoBehaviour
 		{
 			if (c.ToString() == ",")
 			{
+				if (output == null || output == "" || output == "\n") continue;
 				dataTableY[inputFieldSpot].text = output;
+				Debug.Log(output);
+				Debug.Log(inputFieldSpot);
 				output = string.Empty;
 				inputFieldSpot++;
 			}

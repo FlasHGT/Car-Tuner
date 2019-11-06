@@ -1,19 +1,20 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIHelper : MonoBehaviour
 {
-    public GameObject checkActiveTabs;
+    public CanvasGroup checkActiveTabs;
     public GameObject graphicActive;
     public GameObject graphicPassive;
 
     [Header("Tabs to Disable")]
-    public GameObject[] tabs;
+    public CanvasGroup[] tabsCanvasGroup;
 
     private void Update()
     {
-        if (checkActiveTabs.activeSelf)
+        if (checkActiveTabs.alpha == 1f)
         {
             graphicActive.SetActive(true);
             graphicPassive.SetActive(false);
@@ -28,10 +29,12 @@ public class UIHelper : MonoBehaviour
 
     public void EnableMenu()
     {
-        checkActiveTabs.SetActive(true);
-		foreach(GameObject obj in tabs)
+        checkActiveTabs.alpha = 1f;
+		checkActiveTabs.blocksRaycasts = true;
+		foreach(CanvasGroup cgroup in tabsCanvasGroup)
 		{
-			obj.SetActive(false);
+			cgroup.alpha = 0f;
+			cgroup.blocksRaycasts = false;
 		}
     }
 }
