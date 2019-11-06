@@ -286,8 +286,13 @@ public class Main : MonoBehaviour
 
 	public void ReadComport()
 	{
-		com.ManualStart();
+		if (!com.hasConnected)
+		{
+			com.ManualStart();
+			return;
+		}
 
+		com.ManualStart();
 		foreach (char c in com.output.ToCharArray())
 		{
 			if (c.ToString() == ",")

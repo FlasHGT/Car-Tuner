@@ -20,7 +20,7 @@ public class COM : MonoBehaviour
 	private int amountOfLinesNotToRead = 6;
 	private bool hasReadFirstArray = false;
 	private bool continueReading = true;
-	private bool hasConnected = false;
+	public bool hasConnected = false;
 
 	public StatusManager statusManager;
 
@@ -87,6 +87,12 @@ public class COM : MonoBehaviour
 
 	public void ManualStart()
 	{
+		if (!hasConnected)
+		{
+			statusManager.statusText.text = "Please connect the device and try again.";
+			return;
+		}
+
 		if (!serialPort.IsOpen)
 		{
 			serialPort.Open();

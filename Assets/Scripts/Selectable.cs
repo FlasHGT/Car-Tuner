@@ -67,8 +67,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 				currentlySelected.Add(this);
 				EditValues.allSelectedInputFields.Add(thisInputField);
-
-				thisImage.color = Color.yellow;
+				
 			}
 		}
 	}
@@ -87,15 +86,6 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	private void Update()
 	{
 		thisInputField.DeactivateInputField();
-
-		if (currentlySelected.Contains(this))
-		{
-			thisImage.color = Color.yellow;
-		}
-		else
-		{
-			thisImage.color = startingColor;
-		}
 
 		if (mainInputField.gameObject.activeInHierarchy)
 		{
@@ -117,7 +107,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 		if (!dontChangeValue)
 		{
-			if (Input.GetKeyDown(KeyCode.UpArrow) && thisImage.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2)
+			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2)
 			{
 				float newFloat = 0f;
 
@@ -133,7 +123,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 				thisInputField.text = newFloat.ToString();
 				thisInputField.textComponent.text = newFloat.ToString();
 			}
-			else if (Input.GetKeyDown(KeyCode.DownArrow) && thisImage.color == Color.yellow && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2)
+			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2)
 			{
 				float newFloat = 0f;
 
