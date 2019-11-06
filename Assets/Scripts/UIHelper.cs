@@ -4,16 +4,16 @@ using UnityEngine;
 
 public class UIHelper : MonoBehaviour
 {
-    public GameObject checkActive;
+    public GameObject checkActiveTabs;
     public GameObject graphicActive;
     public GameObject graphicPassive;
 
     [Header("Tabs to Disable")]
-    public GameObject tab1;
+    public GameObject[] tabs;
 
     private void Update()
     {
-        if (checkActive.activeSelf)
+        if (checkActiveTabs.activeSelf)
         {
             graphicActive.SetActive(true);
             graphicPassive.SetActive(false);
@@ -28,7 +28,10 @@ public class UIHelper : MonoBehaviour
 
     public void EnableMenu()
     {
-            checkActive.SetActive(true);
-            tab1.SetActive(false);
+        checkActiveTabs.SetActive(true);
+		foreach(GameObject obj in tabs)
+		{
+			obj.SetActive(false);
+		}
     }
 }

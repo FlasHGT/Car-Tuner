@@ -10,8 +10,9 @@ public class COM : MonoBehaviour
 	[HideInInspector] public string output = string.Empty;
 	[HideInInspector] public string output2 = string.Empty;
 
-	[SerializeField] Image connectImage = null;
 	[SerializeField] Dropdown portName = null;
+	[SerializeField] Text connectButtonText = null;
+	[SerializeField] Button connectButton = null;
 
 	private string[] importMessage = {"a", "b", "d"};
 	private string readMessage = string.Empty;
@@ -19,6 +20,9 @@ public class COM : MonoBehaviour
 	private int amountOfLinesNotToRead = 6;
 	private bool hasReadFirstArray = false;
 	private bool continueReading = true;
+	private bool hasConnected = false;
+
+	public StatusManager statusManager;
 
 	private List<string> portNames = new List<string>();
 
@@ -30,7 +34,22 @@ public class COM : MonoBehaviour
 		serialPort.Parity = Parity.None;
 		serialPort.StopBits = StopBits.One;
 
-		connectImage.color = Color.green; // Change it to red if serialport doesn't create a connection
+		hasConnected = true;
+		statusManager.statusText.text = "Sucessfuly connected to " + serialPort.PortName + " port.";
+	}
+
+	private void Update()
+	{
+		if (portName.options[portName.value].text.Equals(serialPort.PortName) && hasConnected)
+		{
+			connectButtonText.text = "Connected";
+			connectButton.interactable = false;
+		}
+		else
+		{
+			connectButtonText.text = "Connect";
+			connectButton.interactable = true;
+		}
 	}
 
 	public void ChangeProfile (int i)
