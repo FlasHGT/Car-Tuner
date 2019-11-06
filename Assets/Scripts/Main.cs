@@ -232,6 +232,7 @@ public class Main : MonoBehaviour
 
 	public void WriteComport()
 	{
+		com.statusManager.statusText.text = "Preparing data for transfer to device...";
 		for (int x = 0; x < dataTableX.Length; x++)
 		{
 			output += dataTableX[x].text + ",";
@@ -266,9 +267,11 @@ public class Main : MonoBehaviour
 		// Subscribe to events.
 		xmodem.Completed += (s, e) => {
 			Debug.Log($"Operation completed.\n");
+			com.statusManager.statusText.text = "Writing data to device has successfully completed!";
 		};
 		xmodem.Aborted += (s, e) => {
 			Debug.Log("Operation Aborted.\n");
+			com.statusManager.statusText.text = "Writing data to device has failed!";
 		};
 
 		com.serialPort.Open();
@@ -292,6 +295,7 @@ public class Main : MonoBehaviour
 			return;
 		}
 
+		com.statusManager.statusText.text = "Reading data from the device...";
 		com.ManualStart();
 		foreach (char c in com.output.ToCharArray())
 		{
@@ -331,6 +335,7 @@ public class Main : MonoBehaviour
 
 		Reset();
 
+		com.statusManager.statusText.text = "Data reading from device has completed!";
 		com.serialPort.Close();
 	}
 
