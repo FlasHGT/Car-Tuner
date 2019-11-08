@@ -9,14 +9,14 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	public static HashSet<Selectable> allMySelectables = new HashSet<Selectable>();
 	public static HashSet<Selectable> currentlySelected = new HashSet<Selectable>();
 
+	[HideInInspector] public bool selected = false;
+
 	// Main object
 	[SerializeField] InputField mainInputField = null;
 
 	// This object
 	private bool dontChangeValue = false;
-	private Image thisImage = null;
 	private InputField thisInputField = null;
-	private Color startingColor;
 
 	private void Awake()
 	{
@@ -25,18 +25,16 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 	private void Start()
 	{
-		thisImage = GetComponent<Image>();
 		thisInputField = GetComponent<InputField>();
-		startingColor = thisImage.color;
 	}
 
 	public void OnDeselect(BaseEventData eventData)
-	{
+	{ 
 		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
 		{
 			dontChangeValue = false;
-			thisImage.color = Color.white;
-		}
+			selected = false;
+		}	
 	}
 
 	public void OnPointerClick(PointerEventData eventData)
@@ -67,9 +65,10 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 				currentlySelected.Add(this);
 				EditValues.allSelectedInputFields.Add(thisInputField);
-				
+				selected = true;
 			}
 		}
+		print("hello");
 	}
 
 	public static void DeselectAll(BaseEventData eventData)
@@ -107,7 +106,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 		if (!dontChangeValue)
 		{
-			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2)
+			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && selected)
 			{
 				float newFloat = 0f;
 
@@ -123,7 +122,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 				thisInputField.text = newFloat.ToString();
 				thisInputField.textComponent.text = newFloat.ToString();
 			}
-			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2)
+			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && selected)
 			{
 				float newFloat = 0f;
 

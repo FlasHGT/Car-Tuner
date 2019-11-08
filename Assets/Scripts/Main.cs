@@ -1,21 +1,13 @@
 ﻿using UnityEngine;
 using System.IO;
 using UnityEngine.UI;
-using System;
 using System.Text;
-using System.Threading;
 using UnityEngine.EventSystems;
-using System.Collections.Generic;
-using System.IO.Ports;
 using XModemProtocol;
-using System.Linq;
 
 public class Main : MonoBehaviour
 {
-	[SerializeField] GameObject EditValuesPanel = null;
-
-	[SerializeField] Toggle xToggle = null;
-	[SerializeField] Toggle yToggle = null;
+	[SerializeField] GameObject editValuesPanel = null;
 
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
@@ -25,7 +17,6 @@ public class Main : MonoBehaviour
 
 	private COM com = null;
 
-	private InputField[] currentTable = null;
 	private StreamReader reader = null;
 
 	private int inputFieldSpot = 0;
@@ -36,7 +27,7 @@ public class Main : MonoBehaviour
 
 	public void Deselect()
 	{
-		if (!EditValuesPanel.activeInHierarchy)
+		if (!editValuesPanel.activeInHierarchy)
 		{
 			Selectable.DeselectAll(eventData);
 		}
@@ -44,95 +35,81 @@ public class Main : MonoBehaviour
 
 	public void Export(string exportPath)
 	{
-		if (xToggle.isOn && yToggle.isOn)
+		for (int x = 0; x < dataTableX.Length; x++)
 		{
-			for (int x = 0; x < dataTableX.Length; x++)
+			output += dataTableX[x].text + ",";
+
+			if ((x % inputFieldOffset) == 0 && x != 0)
 			{
-				output += dataTableX[x].text + ",";
-
-				if ((x % inputFieldOffset) == 0 && x != 0)
-				{
-					output += "\n";
-					inputFieldOffset += 16;
-				}
+				output += "\n";
+				inputFieldOffset += 16;
 			}
-
-			inputFieldOffset = 15;
-			output += "\n";
-
-			for (int x = 0; x < dataTableY.Length; x++)
-			{
-				output += dataTableY[x].text + ",";
-
-				if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
-				{
-					output += "\n";
-					inputFieldOffset += 16;
-				}
-			}
-
-			File.WriteAllText(exportPath, output);
-
-			Reset();
 		}
-		else
+
+		inputFieldOffset = 15;
+		output += "\n";
+
+		for (int x = 0; x < dataTableY.Length; x++)
 		{
-			if (!xToggle.isOn && !yToggle.isOn)
+			output += dataTableY[x].text + ",";
+
+			if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
 			{
-				Debug.Log("Error"); // Make a pop up
-				return;
+				output += "\n";
+				inputFieldOffset += 16;
 			}
-
-			if (xToggle.isOn)
-			{
-				currentTable = dataTableX;
-			}
-			else
-			{
-				currentTable = dataTableY;
-			}
-
-			for (int x = 0; x < currentTable.Length; x++)
-			{
-				output += currentTable[x].text + ",";
-
-				if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
-				{
-					output += "\n";
-					inputFieldOffset += 16;
-				}
-			}
-
-			File.WriteAllText(exportPath, output);
-
-			Reset();
 		}
+
+		File.WriteAllText(exportPath, output);
+
+		Reset();
 	}
 
 	public void Import(string importPath)
 	{
-		if (xToggle.isOn && yToggle.isOn)
+		reader = new StreamReader(importPath);
+
+		while (reader.ReadLine() != null)
+		{
+			lineCount++;
+		}
+
+		if (lineCount == 33)
 		{
 			reader = new StreamReader(importPath);
 
-			while (reader.ReadLine() != null)
+			for (int x = 0; x < 16; x++)
 			{
-				lineCount++;
+				string line = reader.ReadLine();
+
+				foreach (char c in line.ToCharArray())
+				{
+					if (c.ToString() == "," || c.ToString() == " ")
+					{
+						dataTableX[inputFieldSpot].text = output;
+						output = string.Empty;
+						inputFieldSpot++;
+					}
+					else
+					{
+						output += c;
+					}
+				}
 			}
 
-			if (lineCount == 33)
+			inputFieldSpot = 0;
+
+			for (int x = 0; x < 17; x++)
 			{
-				reader = new StreamReader(importPath);
+				string line = reader.ReadLine();
 
-				for (int x = 0; x < 16; x++)
+				if (line != string.Empty)
 				{
-					string line = reader.ReadLine();
-
 					foreach (char c in line.ToCharArray())
 					{
 						if (c.ToString() == "," || c.ToString() == " ")
 						{
-							dataTableX[inputFieldSpot].text = output;
+							dataTableY[inputFieldSpot].text = output;
 							output = string.Empty;
 							inputFieldSpot++;
 						}
@@ -142,92 +119,14 @@ public class Main : MonoBehaviour
 						}
 					}
 				}
-
-				inputFieldSpot = 0;
-
-				for (int x = 0; x < 17; x++)
-				{
-					string line = reader.ReadLine();
-
-					if (line != string.Empty)
-					{
-						foreach (char c in line.ToCharArray())
-						{
-							if (c.ToString() == "," || c.ToString() == " ")
-							{
-								dataTableY[inputFieldSpot].text = output;
-								output = string.Empty;
-								inputFieldSpot++;
-							}
-							else
-							{
-								output += c;
-							}
-						}
-					}
-				}
 			}
-			else
-			{
-				Debug.Log("Error"); // Make a pop up
-			}
-
-			Reset();
 		}
 		else
 		{
-			if (!xToggle.isOn && !yToggle.isOn)
-			{
-				Debug.Log("Error"); // Make a pop up
-				return;
-			}
-
-			if (xToggle.isOn)
-			{
-				currentTable = dataTableX;
-			}
-			else
-			{
-				currentTable = dataTableY;
-			}
-
-			reader = new StreamReader(importPath);
-
-			while (reader.ReadLine() != null)
-			{
-				lineCount++;
-			}
-
-			if (lineCount == 16)
-			{
-				reader = new StreamReader(importPath);
-
-				for (int x = 0; x < lineCount; x++)
-				{
-					string line = reader.ReadLine();
-
-					foreach (char c in line.ToCharArray())
-					{
-						if (c.ToString() == "," || c.ToString() == " ")
-						{
-							currentTable[inputFieldSpot].text = output;
-							output = string.Empty;
-							inputFieldSpot++;
-						}
-						else
-						{
-							output += c;
-						}
-					}
-				}
-			}
-			else
-			{
-				Debug.Log("Error"); // Make a pop up
-			}
-
-			Reset();
+			Debug.Log("Error"); // Make a pop up
 		}
+
+		Reset();
 	}
 
 	public void WriteComport()

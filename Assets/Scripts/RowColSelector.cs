@@ -20,7 +20,7 @@ public class RowColSelector : MonoBehaviour
 			{
 				Selectable.currentlySelected.Add(selectable);
 				EditValues.allSelectedInputFields.Add(i);
-				i.GetComponent<Image>().color = Color.yellow;
+				selectable.selected = true;
 			}
 		}
 	}

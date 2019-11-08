@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using SFB;
 
-public class UIManager : MonoBehaviour
+public class FileExplorer : MonoBehaviour
 {
 	private Main main = null;
 

@@ -32,7 +32,7 @@ public class EditValues : MonoBehaviour
 
 				i.text = newValue;
 				i.textComponent.text = newValue;
-				i.GetComponent<Image>().color = Color.white;
+				i.GetComponent<Selectable>().selected = false;
 			}
 
 			Selectable.currentlySelected.Clear();
@@ -58,7 +58,7 @@ public class EditValues : MonoBehaviour
 
 				i.text = newValue.ToString();
 				i.textComponent.text = newValue.ToString();
-				i.GetComponent<Image>().color = Color.white;
+				i.GetComponent<Selectable>().selected = false;
 			}
 
 			Selectable.currentlySelected.Clear();
