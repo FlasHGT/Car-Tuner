@@ -9,10 +9,11 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	public static HashSet<Selectable> allMySelectables = new HashSet<Selectable>();
 	public static HashSet<Selectable> currentlySelected = new HashSet<Selectable>();
 
-	[HideInInspector] public bool selected = false;
+	public Image selectedImage = null;
+	public Color selectedColor;
 
 	// Main object
-	[SerializeField] InputField mainInputField;
+	private InputField mainInputField;
 
 	// This object
 	private bool dontChangeValue = false;
@@ -26,12 +27,11 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	private void Start()
 	{
 		thisInputField = GetComponent<InputField>();
+
 		if (The.main.mainInput != null)
 		{
 			mainInputField = The.main.mainInput;
 		}
-		
-
 	}
 
 	public void OnDeselect(BaseEventData eventData)
@@ -39,7 +39,6 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 		if (!Input.GetKey(KeyCode.LeftControl) && !Input.GetKey(KeyCode.RightControl))
 		{
 			dontChangeValue = false;
-			selected = false;
 		}	
 	}
 
@@ -71,10 +70,8 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 				currentlySelected.Add(this);
 				EditValues.allSelectedInputFields.Add(thisInputField);
-				selected = true;
 			}
 		}
-		print("hello");
 	}
 
 	public static void DeselectAll(BaseEventData eventData)
@@ -86,6 +83,20 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 		EditValues.allSelectedInputFields.Clear();
 		currentlySelected.Clear();
+	}
+
+	public void ChangeColor ()
+	{
+		if (currentlySelected.Contains(this))
+		{
+			selectedColor.a = 0.2f;
+			selectedImage.color = selectedColor;
+		}
+		else
+		{
+			selectedColor.a = 0f;
+			selectedImage.color = selectedColor;
+		}
 	}
 
 	private void Update()
@@ -101,6 +112,8 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 			thisInputField.interactable = true;
 		}
 
+		ChangeColor();
+
 		if (float.Parse(thisInputField.text) < 0)
 		{
 			thisInputField.text = "0";
@@ -112,7 +125,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 		if (!dontChangeValue)
 		{
-			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && selected)
+			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && currentlySelected.Contains(this))
 			{
 				float newFloat = 0f;
 
@@ -128,7 +141,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 				thisInputField.text = newFloat.ToString();
 				thisInputField.textComponent.text = newFloat.ToString();
 			}
-			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && selected)
+			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && currentlySelected.Contains(this))
 			{
 				float newFloat = 0f;
 

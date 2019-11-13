@@ -16,11 +16,10 @@ public class RowColSelector : MonoBehaviour
 		{
 			Selectable selectable = i.GetComponent<Selectable>();
 
-			if(!Selectable.currentlySelected.Contains(selectable))
+			if (!Selectable.currentlySelected.Contains(selectable))
 			{
 				Selectable.currentlySelected.Add(selectable);
 				EditValues.allSelectedInputFields.Add(i);
-				selectable.selected = true;
 			}
 		}
 	}

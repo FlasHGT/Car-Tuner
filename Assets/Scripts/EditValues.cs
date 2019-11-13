@@ -32,13 +32,14 @@ public class EditValues : MonoBehaviour
 
 				i.text = newValue;
 				i.textComponent.text = newValue;
-				i.GetComponent<Selectable>().selected = false;
+
+				Selectable newSelectable = i.GetComponent<Selectable>();
+				newSelectable.ChangeColor();
 			}
 
 			Selectable.currentlySelected.Clear();
 			allSelectedInputFields.Clear();
 			inputField.text = string.Empty;
-			toggle.isOn = false;
 			panel.SetActive(false);
 		}
 		else
@@ -58,11 +59,11 @@ public class EditValues : MonoBehaviour
 
 				i.text = newValue.ToString();
 				i.textComponent.text = newValue.ToString();
-				i.GetComponent<Selectable>().selected = false;
 			}
 
 			Selectable.currentlySelected.Clear();
 			allSelectedInputFields.Clear();
+			toggle.isOn = true;
 			inputField.text = string.Empty;
 			panel.SetActive(false);
 		}
@@ -76,13 +77,13 @@ public class EditValues : MonoBehaviour
 			readyToApply = true;
 		}
 
-		if (Input.GetKeyDown(KeyCode.Return) && readyToApply && inputField.text != string.Empty)
+		if (Input.GetKeyDown(KeyCode.Return) && readyToApply && inputField.text != string.Empty || Input.GetKeyDown(KeyCode.KeypadEnter) && readyToApply && inputField.text != string.Empty)
 		{
 			ApplyValue();
 			readyToApply = false;
 		}
 
-		if (Selectable.currentlySelected.Count != 0 && Input.GetKeyDown(KeyCode.Return) && !panel.activeInHierarchy)
+		if (Selectable.currentlySelected.Count != 0 && Input.GetKeyDown(KeyCode.Return) && !panel.activeInHierarchy || Input.GetKeyDown(KeyCode.KeypadEnter) && readyToApply && inputField.text != string.Empty)
 		{
 			panel.SetActive(true);
 			inputField.ActivateInputField();
