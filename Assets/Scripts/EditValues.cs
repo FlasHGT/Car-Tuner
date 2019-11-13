@@ -83,7 +83,7 @@ public class EditValues : MonoBehaviour
 			readyToApply = false;
 		}
 
-		if (Selectable.currentlySelected.Count != 0 && Input.GetKeyDown(KeyCode.Return) && !panel.activeInHierarchy || Input.GetKeyDown(KeyCode.KeypadEnter) && readyToApply && inputField.text != string.Empty)
+		if (Selectable.currentlySelected.Count != 0 && Input.GetKeyDown(KeyCode.Return) && !panel.activeInHierarchy || Input.GetKeyDown(KeyCode.KeypadEnter) && Selectable.currentlySelected.Count != 0 && !panel.activeInHierarchy)
 		{
 			panel.SetActive(true);
 			inputField.ActivateInputField();
