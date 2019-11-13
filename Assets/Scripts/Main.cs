@@ -8,6 +8,8 @@ using XModemProtocol;
 public class Main : MonoBehaviour
 {
 	[SerializeField] GameObject editValuesPanel = null;
+	
+	public InputField mainInput;
 
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
@@ -238,9 +240,15 @@ public class Main : MonoBehaviour
 		com.serialPort.Close();
 	}
 
+	private void Awake()
+	{
+		The.main = this;
+	}
+
 	private void Start()
 	{
 		com = GetComponent<COM>();
+		
 	}
 
 	private void Update()

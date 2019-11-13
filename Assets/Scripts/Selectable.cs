@@ -12,7 +12,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	[HideInInspector] public bool selected = false;
 
 	// Main object
-	[SerializeField] InputField mainInputField = null;
+	[SerializeField] InputField mainInputField;
 
 	// This object
 	private bool dontChangeValue = false;
@@ -26,6 +26,12 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	private void Start()
 	{
 		thisInputField = GetComponent<InputField>();
+		if (The.main.mainInput != null)
+		{
+			mainInputField = The.main.mainInput;
+		}
+		
+
 	}
 
 	public void OnDeselect(BaseEventData eventData)
