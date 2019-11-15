@@ -7,12 +7,16 @@ public class COM : MonoBehaviour
 {
 	public SerialPort serialPort = new SerialPort();
 
+	public bool hasConnected = false;
+	public StatusManager statusManager;
+
 	[HideInInspector] public string output = string.Empty;
 	[HideInInspector] public string output2 = string.Empty;
 
 	[SerializeField] Dropdown portName = null;
 	[SerializeField] Text connectButtonText = null;
 	[SerializeField] Button connectButton = null;
+	[SerializeField] Button[] channelButtons = null;
 
 	private string[] importMessage = {"a", "b", "d"};
 	private string readMessage = string.Empty;
@@ -20,9 +24,6 @@ public class COM : MonoBehaviour
 	private int amountOfLinesNotToRead = 6;
 	private bool hasReadFirstArray = false;
 	private bool continueReading = true;
-	public bool hasConnected = false;
-
-	public StatusManager statusManager;
 
 	private List<string> portNames = new List<string>();
 
@@ -58,27 +59,43 @@ public class COM : MonoBehaviour
 		{
 			case 0:
 				importMessage[1] = "b";
+				channelButtons[0].interactable = false;
+				ResetChannels(0);
 				break;
 			case 1:
 				importMessage[1] = "e";
+				channelButtons[1].interactable = false;
+				ResetChannels(1);
 				break;
 			case 2:
 				importMessage[1] = "p";
+				channelButtons[2].interactable = false;
+				ResetChannels(2);
 				break;
 			case 3:
 				importMessage[1] = "0";
+				channelButtons[3].interactable = false;
+				ResetChannels(3);
 				break;
 			case 4:
 				importMessage[1] = "1";
+				channelButtons[4].interactable = false;
+				ResetChannels(4);
 				break;
 			case 5:
 				importMessage[1] = "2";
+				channelButtons[5].interactable = false;
+				ResetChannels(5);
 				break;
 			case 6:
 				importMessage[1] = "3";
+				channelButtons[6].interactable = false;
+				ResetChannels(6);
 				break;
 			case 7:
 				importMessage[1] = "4";
+				channelButtons[7].interactable = false;
+				ResetChannels(7);
 				break;
 			default:
 				break;
@@ -107,6 +124,17 @@ public class COM : MonoBehaviour
 		Reset();
 
 		Read();
+	}
+
+	private void ResetChannels (int i)
+	{
+		for (int x = 0; x < channelButtons.Length; x++)
+		{
+			if (x != i)
+			{
+				channelButtons[x].interactable = true;
+			}
+		}
 	}
 
 	private void Read()

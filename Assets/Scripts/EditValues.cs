@@ -11,13 +11,33 @@ public class EditValues : MonoBehaviour
 	[SerializeField] InputField inputField = null;
 	[SerializeField] Toggle toggle = null;
 
+	private float currentTime = 0f;
 	private bool readyToApply = false;
 
 	private void ApplyValue ()
 	{
 		if (toggle.isOn)
 		{
-			foreach (InputField i in allSelectedInputFields)
+			if(allSelectedInputFields.Count != 1)
+			{
+				foreach (InputField i in allSelectedInputFields)
+				{
+					string newValue = string.Empty;
+
+					if (inputField.text == string.Empty)
+					{
+						newValue = "0";
+					}
+					else
+					{
+						newValue = inputField.text;
+					}
+
+					i.text = newValue;
+					i.textComponent.text = newValue;
+				}
+			}
+			else
 			{
 				string newValue = string.Empty;
 
@@ -30,43 +50,69 @@ public class EditValues : MonoBehaviour
 					newValue = inputField.text;
 				}
 
-				i.text = newValue;
-				i.textComponent.text = newValue;
-
-				Selectable newSelectable = i.GetComponent<Selectable>();
-				newSelectable.ChangeColor();
+				allSelectedInputFields[0].text = newValue;
+				allSelectedInputFields[0].textComponent.text = newValue;
 			}
-
-			Selectable.currentlySelected.Clear();
-			allSelectedInputFields.Clear();
-			inputField.text = string.Empty;
-			panel.SetActive(false);
 		}
 		else
 		{
-			foreach (InputField i in allSelectedInputFields)
+			if (allSelectedInputFields.Count != 1)
+			{
+				foreach (InputField i in allSelectedInputFields)
+				{
+					float newValue = 0f;
+
+					if (inputField.text == string.Empty)
+					{
+						newValue = float.Parse(i.text) + 0f;
+					}
+					else
+					{
+						newValue = float.Parse(i.text) + float.Parse(inputField.text);
+					}
+
+					i.text = newValue.ToString();
+					i.textComponent.text = newValue.ToString();
+				}
+			}
+			else
 			{
 				float newValue = 0f;
 
 				if (inputField.text == string.Empty)
 				{
-					newValue = float.Parse(i.text) + 0f;
+					newValue = float.Parse(allSelectedInputFields[0].text) + 0f;
 				}
 				else
 				{
-					newValue = float.Parse(i.text) + float.Parse(inputField.text);
+					newValue = float.Parse(allSelectedInputFields[0].text) + float.Parse(inputField.text);
 				}
 
-				i.text = newValue.ToString();
-				i.textComponent.text = newValue.ToString();
+				allSelectedInputFields[0].text = newValue.ToString();
+				allSelectedInputFields[0].textComponent.text = newValue.ToString();
 			}
 
+			toggle.isOn = true;
+		}
+
+		if (allSelectedInputFields.Count != 1)
+		{
 			Selectable.currentlySelected.Clear();
 			allSelectedInputFields.Clear();
-			toggle.isOn = true;
-			inputField.text = string.Empty;
-			panel.SetActive(false);
 		}
+		else
+		{
+			allSelectedInputFields[0].Select();
+		}
+
+		currentTime = Time.time;
+		inputField.text = string.Empty;
+		panel.SetActive(false);
+	}
+
+	private void Start ()
+	{
+		currentTime = Time.time;
 	}
 
 	// Update is called once per frame
@@ -83,7 +129,7 @@ public class EditValues : MonoBehaviour
 			readyToApply = false;
 		}
 
-		if (Selectable.currentlySelected.Count != 0 && Input.GetKeyDown(KeyCode.Return) && !panel.activeInHierarchy || Input.GetKeyDown(KeyCode.KeypadEnter) && Selectable.currentlySelected.Count != 0 && !panel.activeInHierarchy)
+		if (Selectable.currentlySelected.Count != 0 && Input.GetKeyDown(KeyCode.Return) && !panel.activeInHierarchy && Time.time - currentTime > 0.5f|| Input.GetKeyDown(KeyCode.KeypadEnter) && Selectable.currentlySelected.Count != 0 && !panel.activeInHierarchy && Time.time - currentTime > 0.5f)
 		{
 			panel.SetActive(true);
 			inputField.ActivateInputField();
