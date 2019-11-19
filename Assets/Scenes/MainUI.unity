@@ -587,7 +587,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1774595158}
+      - m_Target: {fileID: 1949543795}
         m_MethodName: ChangeProfile
         m_Mode: 3
         m_Arguments:
@@ -68000,7 +68000,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1774595158}
+      - m_Target: {fileID: 1949543795}
         m_MethodName: ChangeProfile
         m_Mode: 3
         m_Arguments:
@@ -69692,7 +69692,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1774595158}
+      - m_Target: {fileID: 1949543795}
         m_MethodName: ChangeProfile
         m_Mode: 3
         m_Arguments:
@@ -74692,7 +74692,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1774595158}
+      - m_Target: {fileID: 1949543795}
         m_MethodName: ChangeProfile
         m_Mode: 3
         m_Arguments:
@@ -87800,7 +87800,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1774595158}
+      - m_Target: {fileID: 1949543795}
         m_MethodName: ChangeProfile
         m_Mode: 3
         m_Arguments:
@@ -94887,7 +94887,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1774595158}
+      - m_Target: {fileID: 1949543795}
         m_MethodName: ChangeProfile
         m_Mode: 3
         m_Arguments:
@@ -96430,7 +96430,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1774595158}
+      - m_Target: {fileID: 1949543795}
         m_MethodName: ChangeProfile
         m_Mode: 3
         m_Arguments:
@@ -98419,7 +98419,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1774595158}
+      - m_Target: {fileID: 1949543795}
         m_MethodName: ChangeProfile
         m_Mode: 3
         m_Arguments:
