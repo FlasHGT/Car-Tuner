@@ -13,14 +13,10 @@ public class ChannelManager : MonoBehaviour
 
 	[SerializeField] string currentDataTableName = string.Empty;
 
-	private string path = string.Empty;
 	private int previousChannel;
 	private bool profileHasBeenSelected = false;
 
-	public void Start()
-	{
-		//File.WriteAllBytes(Application.dataPath + "\\ChannelData\\")
-	}
+	private string startingValues = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
 
 	public void ChangeProfile(int i)
 	{
@@ -29,66 +25,42 @@ public class ChannelManager : MonoBehaviour
 			case 0:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "b";
-				channelButtons[0].interactable = false;
-				ReadDataFromFile(0);
-				ResetChannels(0);
-				previousChannel = 0;
+				PerformActions(0);
 				break;
 			case 1:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "e";
-				channelButtons[1].interactable = false;
-				ReadDataFromFile(1);
-				ResetChannels(1);
-				previousChannel = 1;
+				PerformActions(1);
 				break;
 			case 2:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "p";
-				channelButtons[2].interactable = false;
-				ReadDataFromFile(2);
-				ResetChannels(2);
-				previousChannel = 2;
+				PerformActions(2);
 				break;
 			case 3:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "0";
-				channelButtons[3].interactable = false;
-				ReadDataFromFile(3);
-				ResetChannels(3);
-				previousChannel = 3;
+				PerformActions(3);
 				break;
 			case 4:
-				//SaveDataToFile(previousChannel);
+				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "1";
-				channelButtons[4].interactable = false;
-				//ReadDataFromFile(4);
-				ResetChannels(4);
-				previousChannel = 4;
+				PerformActions(4);
 				break;
 			case 5:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "2";
-				channelButtons[5].interactable = false;
-				ReadDataFromFile(5);
-				ResetChannels(5);
-				previousChannel = 5;
+				PerformActions(5);
 				break;
 			case 6:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "3";
-				channelButtons[6].interactable = false;
-				ReadDataFromFile(6);
-				ResetChannels(6);
-				previousChannel = 6;
+				PerformActions(6);
 				break;
 			case 7:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "4";
-				channelButtons[7].interactable = false;
-				ReadDataFromFile(7);
-				ResetChannels(7);
-				previousChannel = 7;
+				PerformActions(7);
 				break;
 			default:
 				break;
@@ -97,11 +69,49 @@ public class ChannelManager : MonoBehaviour
 		profileHasBeenSelected = true;
 	}
 
+	private void Start()
+	{
+		CreateFilledFiles();
+	}
+
+	private void CreateFilledFiles()
+	{
+		for (int x = 0; x < 8; x++)
+		{
+			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + currentDataTableName + ".csv";
+
+			if (!File.Exists(path))
+			{
+				string newOutput = string.Empty;
+
+				for (int y = 0; y < 16; y++)
+				{
+					newOutput += startingValues;
+					
+					if (y != 15)
+					{
+						newOutput += "\n";
+					}
+				}
+
+				File.WriteAllText(path, newOutput);
+			}
+		}
+	}
+
+	private void PerformActions(int i)
+	{
+		channelButtons[i].interactable = false;
+		ReadDataFromFile(i);
+		ResetChannels(i);
+		previousChannel = i;
+	}
+
 	private void SaveDataToFile(int i)
 	{
 		if (profileHasBeenSelected)
 		{
-			path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
+			string path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
 
 			main.Export(path, true);
 		}
@@ -109,7 +119,7 @@ public class ChannelManager : MonoBehaviour
 
 	private void ReadDataFromFile(int i)
 	{
-		path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
+		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
 
 		main.Import(path);
 	}
