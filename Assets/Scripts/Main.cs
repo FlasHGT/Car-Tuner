@@ -99,6 +99,8 @@ public class Main : MonoBehaviour
 			lineCount++;
 		}
 
+		reader.Close();
+
 		if (lineCount == 33)
 		{
 			reader = new StreamReader(importPath);
@@ -121,6 +123,7 @@ public class Main : MonoBehaviour
 					}
 				}
 			}
+			reader.Close();
 
 			inputFieldSpot = 0;
 
@@ -144,6 +147,7 @@ public class Main : MonoBehaviour
 						}
 					}
 				}
+				reader.Close();
 			}
 		}
 		else
@@ -170,10 +174,9 @@ public class Main : MonoBehaviour
 					}
 				}
 			}
+			reader.Close();
 		}
-
-		reader.Close();
-
+		
 		Reset();
 	}
 

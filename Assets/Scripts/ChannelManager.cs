@@ -17,6 +17,11 @@ public class ChannelManager : MonoBehaviour
 	private int previousChannel;
 	private bool profileHasBeenSelected = false;
 
+	public void Start()
+	{
+		//File.WriteAllBytes(Application.dataPath + "\\ChannelData\\")
+	}
+
 	public void ChangeProfile(int i)
 	{
 		switch (i)
@@ -96,7 +101,7 @@ public class ChannelManager : MonoBehaviour
 	{
 		if (profileHasBeenSelected)
 		{
-			path = @"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\profile" + i + "_" + currentDataTableName + ".csv";
+			path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
 
 			main.Export(path, true);
 		}
@@ -104,7 +109,7 @@ public class ChannelManager : MonoBehaviour
 
 	private void ReadDataFromFile(int i)
 	{
-		path = @"D:\@Projects\Unity Projects\Windows APP\Assets\CSV\profile" + i + "_" + currentDataTableName + ".csv";
+		path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
 
 		main.Import(path);
 	}
