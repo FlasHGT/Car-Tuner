@@ -71,6 +71,11 @@ public class ChannelManager : MonoBehaviour
 
 	private void Start()
 	{
+		if (!Directory.Exists(Application.dataPath + "\\ChannelData\\"))
+		{
+			Directory.CreateDirectory(Application.dataPath + "\\ChannelData\\");
+		}
+
 		CreateFilledFiles();
 	}
 
