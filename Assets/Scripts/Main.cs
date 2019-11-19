@@ -7,14 +7,19 @@ using XModemProtocol;
 
 public class Main : MonoBehaviour
 {
-	[SerializeField] GameObject editValuesPanel = null;
-	
 	public InputField mainInput;
+
+	[SerializeField] GameObject editValuesPanel = null;
 
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
+	[SerializeField] CanvasGroup T12 = null;
+
 	[SerializeField] EventSystem eventSystem = null;
+
+	private InputField[] currentDataTable = null;
+
 	private BaseEventData eventData = null;
 
 	private COM com = null;
@@ -35,30 +40,48 @@ public class Main : MonoBehaviour
 		}
 	}
 
-	public void Export(string exportPath)
+	public void Export(string exportPath, bool writingFromOneDataTable)
 	{
-		for (int x = 0; x < dataTableX.Length; x++)
+		if(!writingFromOneDataTable)
 		{
-			output += dataTableX[x].text + ",";
-
-			if ((x % inputFieldOffset) == 0 && x != 0)
+			for (int x = 0; x < dataTableX.Length; x++)
 			{
-				output += "\n";
-				inputFieldOffset += 16;
+				output += dataTableX[x].text + ",";
+
+				if ((x % inputFieldOffset) == 0 && x != 0)
+				{
+					output += "\n";
+					inputFieldOffset += 16;
+				}
+			}
+
+			inputFieldOffset = 15;
+			output += "\n";
+
+			for (int x = 0; x < dataTableY.Length; x++)
+			{
+				output += dataTableY[x].text + ",";
+
+				if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
+				{
+					output += "\n";
+					inputFieldOffset += 16;
+				}
 			}
 		}
-
-		inputFieldOffset = 15;
-		output += "\n";
-
-		for (int x = 0; x < dataTableY.Length; x++)
+		else
 		{
-			output += dataTableY[x].text + ",";
+			CheckTheActiveDataTable();
 
-			if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
+			for (int x = 0; x < currentDataTable.Length; x++)
 			{
-				output += "\n";
-				inputFieldOffset += 16;
+				output += currentDataTable[x].text + ",";
+
+				if ((x % inputFieldOffset) == 0 && x != 0 && x != 255)
+				{
+					output += "\n";
+					inputFieldOffset += 16;
+				}
 			}
 		}
 
@@ -125,8 +148,31 @@ public class Main : MonoBehaviour
 		}
 		else
 		{
-			Debug.Log("Error"); // Make a pop up
+			CheckTheActiveDataTable();
+
+			reader = new StreamReader(importPath);
+
+			for (int x = 0; x < 16; x++)
+			{
+				string line = reader.ReadLine();
+
+				foreach (char c in line.ToCharArray())
+				{
+					if (c.ToString() == "," || c.ToString() == " ")
+					{
+						currentDataTable[inputFieldSpot].text = output;
+						output = string.Empty;
+						inputFieldSpot++;
+					}
+					else
+					{
+						output += c;
+					}
+				}
+			}
 		}
+
+		reader.Close();
 
 		Reset();
 	}
@@ -238,6 +284,18 @@ public class Main : MonoBehaviour
 
 		com.statusManager.statusText.text = "Data reading from device has completed!";
 		com.serialPort.Close();
+	}
+
+	private void CheckTheActiveDataTable()
+	{
+		if (T12.alpha == 1) // Improve this if more tabs get added
+		{
+			currentDataTable = dataTableX;
+		}
+		else
+		{
+			currentDataTable = dataTableY;
+		}
 	}
 
 	private void Awake()

@@ -21,7 +21,7 @@ public class FileExplorer : MonoBehaviour
 		var path = StandaloneFileBrowser.SaveFilePanel("Export", "", "sample", "csv");
 		if (!string.IsNullOrEmpty(path))
 		{
-			main.Export(path);
+			main.Export(path, false);
 		}
 	}
 
