@@ -9,7 +9,8 @@ public class FileExplorer : MonoBehaviour
 
 	public void FileExplorerImport()
 	{
-		var paths = StandaloneFileBrowser.OpenFilePanel("Import", "", "csv", false);
+		var paths = StandaloneFileBrowser.OpenFilePanel("Import", Application.dataPath, "csv", false);
+		
 		if (paths.Length > 0)
 		{
 			StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
@@ -18,7 +19,8 @@ public class FileExplorer : MonoBehaviour
 
 	public void FileExplorerExport()
 	{
-		var path = StandaloneFileBrowser.SaveFilePanel("Export", "", "sample", "csv");
+		var path = StandaloneFileBrowser.SaveFilePanel("Export", Application.dataPath, "sample", "csv");
+		
 		if (!string.IsNullOrEmpty(path))
 		{
 			main.Export(path, false);
