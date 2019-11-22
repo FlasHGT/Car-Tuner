@@ -78,7 +78,9 @@ public class COM : MonoBehaviour
 			currentMessage++;
 		}
 
+		
 		Reset();
+		Read();
 	}
 
 	private void Read()
