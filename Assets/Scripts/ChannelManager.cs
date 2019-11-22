@@ -14,8 +14,6 @@ public class ChannelManager : MonoBehaviour
 	[SerializeField] string currentDataTableName = string.Empty;
 
 	private int previousChannel;
-	private bool profileHasBeenSelected = false;
-
 	private string startingValues = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
 
 	public void ChangeProfile(int i)
@@ -65,12 +63,12 @@ public class ChannelManager : MonoBehaviour
 			default:
 				break;
 		}
-
-		profileHasBeenSelected = true;
 	}
 
 	private void Start()
 	{
+		ChangeProfile(0);
+
 		if (!Directory.Exists(Application.dataPath + "\\ChannelData\\"))
 		{
 			Directory.CreateDirectory(Application.dataPath + "\\ChannelData\\");
@@ -114,12 +112,9 @@ public class ChannelManager : MonoBehaviour
 
 	private void SaveDataToFile(int i)
 	{
-		if (profileHasBeenSelected)
-		{
-			string path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
+		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
 
-			main.Export(path, true);
-		}
+		main.Export(path, true);
 	}
 
 	private void ReadDataFromFile(int i)

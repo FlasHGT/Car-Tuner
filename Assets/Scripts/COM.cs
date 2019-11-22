@@ -53,6 +53,12 @@ public class COM : MonoBehaviour
 		}
 	}
 
+	public void COMDisconnect ()
+	{
+		serialPort.Close();
+		hasConnected = false;
+	}
+
 	public void ManualStart()
 	{
 		if (!hasConnected)
@@ -228,6 +234,7 @@ public class COM : MonoBehaviour
 				readMessage = serialPort.ReadLine();
 			}
 		}
+
 		hasReadFirstArray = true;
 	}
 

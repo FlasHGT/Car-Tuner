@@ -183,6 +183,7 @@ public class Main : MonoBehaviour
 	public void WriteComport()
 	{
 		com.statusManager.statusText.text = "Preparing data for transfer to device...";
+
 		for (int x = 0; x < dataTableX.Length; x++)
 		{
 			output += dataTableX[x].text + ",";
@@ -247,14 +248,13 @@ public class Main : MonoBehaviour
 
 		com.statusManager.statusText.text = "Reading data from the device...";
 		com.ManualStart();
+
 		foreach (char c in com.output.ToCharArray())
 		{
 			if (c.ToString() == ",")
 			{
 				if (output == null || output == "" || output == "\n") continue;
 				dataTableX[inputFieldSpot].text = output;
-				Debug.Log(output);
-				Debug.Log(inputFieldSpot);
 				output = string.Empty;
 				inputFieldSpot++;
 			}
@@ -272,8 +272,6 @@ public class Main : MonoBehaviour
 			{
 				if (output == null || output == "" || output == "\n") continue;
 				dataTableY[inputFieldSpot].text = output;
-				Debug.Log(output);
-				Debug.Log(inputFieldSpot);
 				output = string.Empty;
 				inputFieldSpot++;
 			}
