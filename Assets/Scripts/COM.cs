@@ -7,7 +7,7 @@ public class COM : MonoBehaviour
 {
 	public SerialPort serialPort = new SerialPort();
 
-	public string[] importMessage = { "a", "b", "d" };
+	[HideInInspector] public string[] importMessage = { "a", "b", "d" };
 
 	public bool hasConnected = false;
 	public StatusManager statusManager;

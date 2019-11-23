@@ -7,6 +7,8 @@ public class EditValues : MonoBehaviour
 {
 	public static List<InputField> allSelectedInputFields = new List<InputField>();
 
+	public ChannelManager currentChannelManager = null;
+	
 	[SerializeField] GameObject panel = null;
 	[SerializeField] InputField inputField = null;
 	[SerializeField] Toggle toggle = null;
@@ -108,6 +110,7 @@ public class EditValues : MonoBehaviour
 		currentTime = Time.time;
 		inputField.text = string.Empty;
 		panel.SetActive(false);
+		currentChannelManager.SaveDataToFile(currentChannelManager.currentActiveChannel);
 	}
 
 	private void Start ()

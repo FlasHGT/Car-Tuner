@@ -176,7 +176,7 @@ public class Main : MonoBehaviour
 			}
 			reader.Close();
 		}
-		
+
 		Reset();
 	}
 

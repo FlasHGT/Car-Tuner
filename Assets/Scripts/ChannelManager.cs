@@ -1,19 +1,19 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ChannelManager : MonoBehaviour
 {
+	public int currentActiveChannel = 0;
+
 	[SerializeField] COM com = null;
 	[SerializeField] Main main = null;
+	[SerializeField] EditValues editValues = null;
 
 	[SerializeField] Button[] channelButtons = null;
+	[SerializeField] CanvasGroup canvasGroup = null;
 
-	[SerializeField] string currentDataTableName = string.Empty;
-
-	private int previousChannel;
+	private int previousChannel = 0;
 	private string startingValues = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
 
 	public void ChangeProfile(int i)
@@ -67,21 +67,21 @@ public class ChannelManager : MonoBehaviour
 
 	private void Start()
 	{
-		ChangeProfile(0);
+		com.importMessage[1] = "b";
+		PerformActions(0);
 
 		if (!Directory.Exists(Application.dataPath + "\\ChannelData\\"))
 		{
 			Directory.CreateDirectory(Application.dataPath + "\\ChannelData\\");
+			CreateFilledFiles();
 		}
-
-		CreateFilledFiles();
 	}
 
 	private void CreateFilledFiles()
 	{
 		for (int x = 0; x < 8; x++)
 		{
-			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + currentDataTableName + ".csv";
+			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + canvasGroup.name + ".csv";
 
 			if (!File.Exists(path))
 			{
@@ -104,24 +104,33 @@ public class ChannelManager : MonoBehaviour
 
 	private void PerformActions(int i)
 	{
+		currentActiveChannel = i;
 		channelButtons[i].interactable = false;
 		ReadDataFromFile(i);
 		ResetChannels(i);
 		previousChannel = i;
 	}
 
-	private void SaveDataToFile(int i)
+	public void SaveDataToFile(int i)
 	{
-		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
+		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + canvasGroup.name + ".csv";
 
 		main.Export(path, true);
 	}
 
 	private void ReadDataFromFile(int i)
 	{
-		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + currentDataTableName + ".csv";
+		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + canvasGroup.name + ".csv";
 
 		main.Import(path);
+	}
+
+	private void Update ()
+	{
+		if (canvasGroup.alpha == 1)
+		{
+			editValues.currentChannelManager = this;
+		}
 	}
 
 	private void ResetChannels(int i)
