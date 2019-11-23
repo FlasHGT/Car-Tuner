@@ -43,20 +43,21 @@ public class COM : MonoBehaviour
 	{
 		if (portName.options[portName.value].text.Equals(serialPort.PortName) && hasConnected)
 		{
-			connectButtonText.text = "Connected";
-			connectButton.interactable = false;
+			connectButtonText.text = "Disconnect";
+			connectButton.onClick.AddListener(COMDisconnect);
 		}
 		else
 		{
 			connectButtonText.text = "Connect";
-			connectButton.interactable = true;
 		}
 	}
 
 	public void COMDisconnect ()
 	{
 		serialPort.Close();
+		statusManager.statusText.text = "Disconnected from " + serialPort.PortName + " port.";
 		hasConnected = false;
+		connectButton.onClick.AddListener(SaveSettings);
 	}
 
 	public void ManualStart()

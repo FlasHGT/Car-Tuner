@@ -14,6 +14,7 @@ public class ChannelManager : MonoBehaviour
 	[SerializeField] CanvasGroup canvasGroup = null;
 
 	private int previousChannel = 0;
+	private bool firstValuesHaveBeenSet = false;
 	private string startingValues = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
 
 	public void ChangeProfile(int i)
@@ -67,9 +68,6 @@ public class ChannelManager : MonoBehaviour
 
 	private void Start()
 	{
-		com.importMessage[1] = "b";
-		PerformActions(0);
-
 		if (!Directory.Exists(Application.dataPath + "\\ChannelData\\"))
 		{
 			Directory.CreateDirectory(Application.dataPath + "\\ChannelData\\");
@@ -127,6 +125,13 @@ public class ChannelManager : MonoBehaviour
 
 	private void Update ()
 	{
+		if (canvasGroup.alpha == 1 && !firstValuesHaveBeenSet)
+		{
+			com.importMessage[1] = "b";
+			PerformActions(0);
+			firstValuesHaveBeenSet = true;
+		}
+
 		if (canvasGroup.alpha == 1)
 		{
 			editValues.currentChannelManager = this;
