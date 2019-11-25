@@ -11,6 +11,8 @@ public class Main : MonoBehaviour
 
 	[SerializeField] GameObject editValuesPanel = null;
 
+	[SerializeField] ChannelManager[] channelManagers = null;
+
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
@@ -264,6 +266,7 @@ public class Main : MonoBehaviour
 			}
 		}
 
+		channelManagers[0].SaveDataToFile(channelManagers[0].currentActiveChannel);
 		Reset();
 
 		foreach (char c in com.output2.ToCharArray())
@@ -281,6 +284,7 @@ public class Main : MonoBehaviour
 			}
 		}
 
+		channelManagers[1].SaveDataToFile(channelManagers[1].currentActiveChannel);
 		Reset();
 
 		com.statusManager.statusText.text = "Data reading from device has completed!";

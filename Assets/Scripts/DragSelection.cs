@@ -3,24 +3,15 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DragSelection : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
+public class DragSelection : MonoBehaviour
 {
-	public void OnBeginDrag(PointerEventData eventData)
+
+	private void Start ()
 	{
 		
 	}
 
-	public void OnDrag(PointerEventData eventData)
-	{
-		
-	}
-
-	public void OnEndDrag(PointerEventData eventData)
-	{
-		
-	}
-
-	public void OnPointerClick(PointerEventData eventData)
+	private void Update ()
 	{
 		
 	}
