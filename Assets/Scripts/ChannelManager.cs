@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class ChannelManager : MonoBehaviour
 {
 	public int currentActiveChannel = 0;
+	public int currentActiveArray = 0;
 
 	[SerializeField] COM com = null;
 	[SerializeField] Main main = null;
@@ -24,42 +25,50 @@ public class ChannelManager : MonoBehaviour
 			case 0:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "b";
-				PerformActions(0);
+				The.currentChannel = i;
+				PerformActions(i);
 				break;
 			case 1:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "e";
-				PerformActions(1);
+				PerformActions(i);
+				The.currentChannel = i;
 				break;
 			case 2:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "p";
-				PerformActions(2);
+				PerformActions(i);
+				The.currentChannel = i;
 				break;
 			case 3:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "0";
-				PerformActions(3);
+				PerformActions(i);
+				The.currentChannel = i;
 				break;
 			case 4:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "1";
-				PerformActions(4);
+				PerformActions(i);
+				The.currentChannel = i;
 				break;
 			case 5:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "2";
-				PerformActions(5);
+				PerformActions(i);
+				The.currentChannel = i;
 				break;
 			case 6:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "3";
-				PerformActions(6);
+				PerformActions(i);
+				The.currentChannel = i;
 				break;
 			case 7:
 				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "4";
-				PerformActions(7);
+				PerformActions(i);
+				The.currentChannel = i;
 				break;
 			default:
 				break;
@@ -102,11 +111,25 @@ public class ChannelManager : MonoBehaviour
 
 	private void PerformActions(int i)
 	{
-		currentActiveChannel = i;
-		channelButtons[i].interactable = false;
-		ReadDataFromFile(i);
-		ResetChannels(i);
-		previousChannel = i;
+		Debug.Log(com.hasConnected);
+		if (!com.hasConnected)
+		{
+			currentActiveChannel = i;
+			channelButtons[i].interactable = false;
+			ReadDataFromFile(i);
+			ResetChannels(i);
+			previousChannel = i;
+		}
+		else
+		{
+			currentActiveChannel = i;
+			channelButtons[i].interactable = false;
+			
+			ResetChannels(i);
+			previousChannel = i;
+			main.RefreshArray(The.currentArray, The.currentChannel);
+		}
+		
 	}
 
 	public void SaveDataToFile(int i)
@@ -127,7 +150,6 @@ public class ChannelManager : MonoBehaviour
 	{
 		if (canvasGroup.alpha == 1 && !firstValuesHaveBeenSet)
 		{
-			com.importMessage[1] = "b";
 			PerformActions(0);
 			firstValuesHaveBeenSet = true;
 		}

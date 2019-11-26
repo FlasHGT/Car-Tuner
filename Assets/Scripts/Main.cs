@@ -8,6 +8,7 @@ using XModemProtocol;
 public class Main : MonoBehaviour
 {
 	public InputField mainInput;
+	public int channelUpdated = 0;
 
 	[SerializeField] GameObject editValuesPanel = null;
 
@@ -125,7 +126,6 @@ public class Main : MonoBehaviour
 					}
 				}
 			}
-			reader.Close();
 
 			inputFieldSpot = 0;
 
@@ -149,8 +149,8 @@ public class Main : MonoBehaviour
 						}
 					}
 				}
-				reader.Close();
 			}
+			reader.Close();
 		}
 		else
 		{
@@ -185,7 +185,7 @@ public class Main : MonoBehaviour
 	public void WriteComport()
 	{
 		com.statusManager.statusText.text = "Preparing data for transfer to device...";
-
+		Reset();
 		for (int x = 0; x < dataTableX.Length; x++)
 		{
 			output += dataTableX[x].text + ",";
@@ -238,6 +238,37 @@ public class Main : MonoBehaviour
 
 		// Dispose of port.
 		com.serialPort.Close();
+		Reset();
+	}
+
+	public void RefreshArray(int array, int channel)
+	{
+		// array 0 - T12
+		// array 1 - T3
+		// channels 0-8
+
+		if (array == 0)
+		{
+			string[] values = com.channelData[array, channel].Split(',');
+			foreach (string value in values)
+			{
+				dataTableX[inputFieldSpot].text = value;
+				inputFieldSpot++;
+			}
+			channelUpdated = channel;
+		}
+		if (array == 1)
+		{
+			string[] values = com.channelData[array, channel].Split(',');
+			foreach (string value in values)
+			{
+				dataTableY[inputFieldSpot].text = value;
+				inputFieldSpot++;
+			}
+			channelUpdated = channel;
+		}
+
+		Reset();
 	}
 
 	public void ReadComport()
@@ -251,44 +282,11 @@ public class Main : MonoBehaviour
 		com.statusManager.statusText.text = "Reading data from the device...";
 		com.ManualStart();
 
-		foreach (char c in com.output.ToCharArray())
-		{
-			if (c.ToString() == ",")
-			{
-				if (output == null || output == "" || output == "\n") continue;
-				dataTableX[inputFieldSpot].text = output;
-				output = string.Empty;
-				inputFieldSpot++;
-			}
-			else
-			{
-				output += c;
-			}
-		}
-
-		channelManagers[0].SaveDataToFile(channelManagers[0].currentActiveChannel);
-		Reset();
-
-		foreach (char c in com.output2.ToCharArray())
-		{
-			if (c.ToString() == ",")
-			{
-				if (output == null || output == "" || output == "\n") continue;
-				dataTableY[inputFieldSpot].text = output;
-				output = string.Empty;
-				inputFieldSpot++;
-			}
-			else
-			{
-				output += c;
-			}
-		}
-
-		channelManagers[1].SaveDataToFile(channelManagers[1].currentActiveChannel);
-		Reset();
-
+		RefreshArray(0, The.currentChannel);
+		RefreshArray(1, The.currentChannel);
 		com.statusManager.statusText.text = "Data reading from device has completed!";
 		com.serialPort.Close();
+		channelManagers[0].SaveDataToFile(channelManagers[0].currentActiveChannel);		
 	}
 
 	private void CheckTheActiveDataTable()
@@ -316,6 +314,15 @@ public class Main : MonoBehaviour
 
 	private void Update()
 	{
+
+		if(The.currentChannel != channelUpdated && com.hasConnected)
+		{
+			RefreshArray(The.currentArray, The.currentChannel);
+		}
+
+		Debug.Log("Current array: " + The.currentArray);
+		Debug.Log("Current channel: " + The.currentChannel);
+
 		if (Selectable.currentlySelected.Count >= 2)
 		{
 			eventSystem.sendNavigationEvents = false;

@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class UIHelper : MonoBehaviour
 {
+
     public CanvasGroup checkActiveTabs;
     public GameObject graphicActive;
     public GameObject graphicPassive;
@@ -35,7 +36,17 @@ public class UIHelper : MonoBehaviour
         checkActiveTabs.alpha = 1f;
 		checkActiveTabs.blocksRaycasts = true;
 		checkActiveTabs.interactable = true;
-		foreach(CanvasGroup cgroup in tabsCanvasGroup)
+
+		if (checkActiveTabs.name == "T12")
+		{
+			The.currentArray = 0;
+		}
+		if (checkActiveTabs.name == "T3")
+		{
+			The.currentArray = 1;
+		}
+		
+		foreach (CanvasGroup cgroup in tabsCanvasGroup)
 		{
 			cgroup.alpha = 0f;
 			cgroup.blocksRaycasts = false;

@@ -2,12 +2,18 @@
 using System.IO.Ports;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 public class COM : MonoBehaviour
 {
 	public SerialPort serialPort = new SerialPort();
 
 	[HideInInspector] public string[] importMessage = { "a", "b", "d" };
+	[HideInInspector] public string[] channelSwitcher = { "b", "e", "p", "0", "1", "2", "3", "4" };
+	
+	// channelData[0][0] - Array T12 and Channel 1
+	// channelData[1][0] - Array T3 and Channel 1
+	public string[,] channelData = new string[2,8];
 
 	public bool hasConnected = false;
 	public StatusManager statusManager;
@@ -21,9 +27,6 @@ public class COM : MonoBehaviour
 
 	private string readMessage = string.Empty;
 	private int currentMessage = 0;
-	private int amountOfLinesNotToRead = 6;
-	private bool hasReadFirstArray = false;
-	private bool continueReading = true;
 
 	private List<string> portNames = new List<string>();
 
@@ -73,183 +76,47 @@ public class COM : MonoBehaviour
 			serialPort.Open();
 		}
 
-		while (currentMessage < importMessage.Length)
-		{
-			serialPort.Write(importMessage[currentMessage]);
-			currentMessage++;
-		}
+		ReadNew();
+	}
 
+	private void ReadNew()
+	{
 		
-		Reset();
-		Read();
-	}
-
-	private void Read()
-	{
-		while (continueReading)
+		for (int i = 0; i < 8; i++)
 		{
-			readMessage = serialPort.ReadLine();
-
-			if (readMessage == "> d")
+			importMessage[1] = channelSwitcher[i];
+			while (currentMessage < importMessage.Length)
 			{
-				for (int x = 0; x < amountOfLinesNotToRead; x++)
-				{
-					serialPort.ReadLine();
-				}
-
-				amountOfLinesNotToRead = 5;
+				serialPort.Write(importMessage[currentMessage]);
+				currentMessage++;
 			}
-			else
+			print(importMessage[0] + " " + importMessage[1] + " " + importMessage[2]);
+			currentMessage = 0;
+
+			for (int k = 0; k < 2; k++)
 			{
-				if (amountOfLinesNotToRead == 5 && output == string.Empty)
+				channelData[k, i] = string.Empty;
+				while (true)
 				{
-					ReadArray();
+					readMessage = serialPort.ReadLine();
+					if (readMessage.StartsWith("-"))
+					{
+						for (int x = 0; x < 16; x++)
+						{
+							readMessage = serialPort.ReadLine();
+							channelData[k, i] += readMessage.Substring(readMessage.IndexOf('|') + 1) + "\n";
+						}
+						channelData[k, i] = Regex.Replace(channelData[k, i], @"\s+", " ");
+						channelData[k, i] = channelData[k, i].Replace(' ', ',');
+						channelData[k, i] = channelData[k, i].Substring(1);
+						channelData[k, i] = channelData[k, i].Remove(channelData[k, i].Length - 1);
+						break;
+					}
 				}
-			}
-
-			if (output != string.Empty && output2 == string.Empty)
-			{
-				for (int x = 0; x < amountOfLinesNotToRead; x++)
-				{
-					serialPort.ReadLine();
-				}
-
-				readMessage = serialPort.ReadLine();
-
-				ReadArray();
-				continueReading = false;
+				print(channelData[k, i]);
 			}
 		}
-	}
-
-	private void ReadArray()
-	{
-		for (int x = 0; x < 16; x++)
-		{
-			if (x > 9)
-			{
-				readMessage = readMessage.Replace("   " + x + " |   ", "");
-
-				for (int y = 0; y < 10; y++)
-				{
-					if (readMessage.Substring(0, 2) == " " + y)
-					{
-						readMessage = readMessage.Remove(0, 1);
-					}
-				}
-			}
-			else
-			{
-				if(x == 9)
-				{
-					readMessage = readMessage.Replace("    " + x + " |   ", "");
-
-					for (int y = 0; y < 10; y++)
-					{
-						if (readMessage.Substring(0, 2) == " " + y)
-						{
-							
-							readMessage = readMessage.Remove(0, 1);
-						}
-					}
-				}
-				else
-				{
-					for (int y = 10; y < 17; y++)
-					{
-						if (readMessage.Contains("" + y))
-						{
-							readMessage = readMessage.Replace("    " + x + " |   ", "");
-						}
-					}
-
-					readMessage = readMessage.Replace("    " + x + " |    ", "");
-				}
-			}
-
-			if (x > 9)
-			{
-				readMessage = readMessage.Replace("    ", ",");
-
-				for (int y = 0; y < 10; y++)
-				{
-					if (readMessage.Contains("" + y))
-					{
-						readMessage = readMessage.Replace(", ", ",");
-					}
-				}
-			}
-			else
-			{
-				if(x == 9)
-				{
-					readMessage = readMessage.Replace("    ", ",");
-
-					for (int y = 0; y < 10; y++)
-					{
-						if (readMessage.Contains("" + y))
-						{
-							readMessage = readMessage.Replace(", ", ",");
-						}
-					}
-				}
-				else
-				{
-					readMessage = readMessage.Replace("     ", ",");
-
-					for (int y = 10; y < 17; y++)
-					{
-						if (readMessage.Contains("" + y))
-						{
-							readMessage = readMessage.Replace("    ", ",");
-						}
-					}
-				}
-			}
-
-			readMessage = readMessage.Replace(" ", ",");
-
-			if (!hasReadFirstArray)
-			{
-				if (x != 15)
-				{
-					output += readMessage + "\n";
-				}
-				else
-				{
-					output += readMessage;
-				}
-			}
-			else
-			{
-				if (x != 15)
-				{
-					output2 += readMessage + "\n";
-				}
-				else
-				{
-					output2 += readMessage;
-				}
-			}
-
-			if (x != 15)
-			{
-				readMessage = serialPort.ReadLine();
-			}
-		}
-
-		hasReadFirstArray = true;
-	}
-
-	private void Reset()
-	{
-		amountOfLinesNotToRead = 6;
-		currentMessage = 0;
-		output = string.Empty;
-		output2 = string.Empty;
-		hasReadFirstArray = false;
-
-		continueReading = true;
+		serialPort.Close();
 	}
 
 	private void Start ()
