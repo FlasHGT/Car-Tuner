@@ -88,7 +88,7 @@ public class ChannelManager : MonoBehaviour
 	{
 		for (int x = 0; x < 8; x++)
 		{
-			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + canvasGroup.name + ".csv";
+			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + "T12" + ".csv";
 
 			if (!File.Exists(path))
 			{
@@ -107,10 +107,53 @@ public class ChannelManager : MonoBehaviour
 				File.WriteAllText(path, newOutput);
 			}
 		}
+		for (int x = 0; x < 8; x++)
+		{
+			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + "T3" + ".csv";
+
+			if (!File.Exists(path))
+			{
+				string newOutput = string.Empty;
+
+				for (int y = 0; y < 16; y++)
+				{
+					newOutput += startingValues;
+
+					if (y != 15)
+					{
+						newOutput += "\n";
+					}
+				}
+
+				File.WriteAllText(path, newOutput);
+			}
+		}
+		for (int x = 0; x < 8; x++)
+		{
+			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + "T4" + ".csv";
+
+			if (!File.Exists(path))
+			{
+				string newOutput = string.Empty;
+
+				for (int y = 0; y < 16; y++)
+				{
+					newOutput += startingValues;
+
+					if (y != 15)
+					{
+						newOutput += "\n";
+					}
+				}
+
+				File.WriteAllText(path, newOutput);
+			}
+		}
 	}
 
 	private void PerformActions(int i)
 	{
+		currentActiveArray = The.currentArray;
 		Debug.Log(com.hasConnected);
 		if (!com.hasConnected)
 		{
@@ -120,14 +163,21 @@ public class ChannelManager : MonoBehaviour
 			ResetChannels(i);
 			previousChannel = i;
 		}
+		else if (com.hasConnected && !The.arrayChangedLocally[The.currentArray, i])
+		{
+			currentActiveChannel = i;
+			channelButtons[i].interactable = false;
+			ResetChannels(i);
+			previousChannel = i;
+			main.RefreshArray(The.currentArray, The.currentChannel);
+		}
 		else
 		{
 			currentActiveChannel = i;
 			channelButtons[i].interactable = false;
-			
+			ReadDataFromFile(i);
 			ResetChannels(i);
 			previousChannel = i;
-			main.RefreshArray(The.currentArray, The.currentChannel);
 		}
 		
 	}
@@ -157,6 +207,11 @@ public class ChannelManager : MonoBehaviour
 		if (canvasGroup.alpha == 1)
 		{
 			editValues.currentChannelManager = this;
+		}
+
+		if (currentActiveArray != The.currentArray)
+		{
+			ChangeProfile(The.currentChannel);
 		}
 	}
 

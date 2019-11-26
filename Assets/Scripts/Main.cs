@@ -186,6 +186,8 @@ public class Main : MonoBehaviour
 	{
 		com.statusManager.statusText.text = "Preparing data for transfer to device...";
 		Reset();
+		
+
 		for (int x = 0; x < dataTableX.Length; x++)
 		{
 			output += dataTableX[x].text + ",";
@@ -228,7 +230,14 @@ public class Main : MonoBehaviour
 		};
 
 		com.serialPort.Open();
-		com.serialPort.Write("u");
+
+		com.writeMessage[1] = com.channelSwitcher[The.currentChannel];
+		com.currentMessage = 0;
+		while (com.currentMessage < com.writeMessage.Length)
+		{
+			com.serialPort.Write(com.writeMessage[com.currentMessage]);
+			com.currentMessage++;
+		}
 		xmodem.Send();
 
 		if (xmodem.State != XModemStates.Idle)
@@ -282,8 +291,7 @@ public class Main : MonoBehaviour
 		com.statusManager.statusText.text = "Reading data from the device...";
 		com.ManualStart();
 
-		RefreshArray(0, The.currentChannel);
-		RefreshArray(1, The.currentChannel);
+		
 		com.statusManager.statusText.text = "Data reading from device has completed!";
 		com.serialPort.Close();
 		channelManagers[0].SaveDataToFile(channelManagers[0].currentActiveChannel);		
@@ -314,14 +322,11 @@ public class Main : MonoBehaviour
 
 	private void Update()
 	{
-
 		if(The.currentChannel != channelUpdated && com.hasConnected)
 		{
+			if(!The.arrayChangedLocally[The.currentArray, The.currentChannel])
 			RefreshArray(The.currentArray, The.currentChannel);
 		}
-
-		Debug.Log("Current array: " + The.currentArray);
-		Debug.Log("Current channel: " + The.currentChannel);
 
 		if (Selectable.currentlySelected.Count >= 2)
 		{

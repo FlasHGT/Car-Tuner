@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.3731193, g: 0.38073996, b: 0.35872698, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -38932,6 +38932,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentActiveChannel: 0
+  currentActiveArray: 0
   com: {fileID: 1774595158}
   main: {fileID: 1774595157}
   editValues: {fileID: 1681551393}
@@ -78129,7 +78130,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1272183124
 RectTransform:
   m_ObjectHideFlags: 0
@@ -92366,6 +92367,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainInput: {fileID: 1630978837}
+  channelUpdated: 0
   editValuesPanel: {fileID: 1413186090}
   channelManagers:
   - {fileID: 1895283837}
@@ -92902,6 +92904,19 @@ MonoBehaviour:
   - a
   - b
   - d
+  writeMessage:
+  - a
+  - b
+  - u
+  channelSwitcher:
+  - b
+  - e
+  - p
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
   hasConnected: 0
   statusManager: {fileID: 1774595160}
   output: 
@@ -92909,6 +92924,7 @@ MonoBehaviour:
   portName: {fileID: 745898509}
   connectButtonText: {fileID: 805381510}
   connectButton: {fileID: 618383934}
+  currentMessage: 0
 --- !u!114 &1774595159
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -96667,6 +96683,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentActiveChannel: 0
+  currentActiveArray: 0
   com: {fileID: 1774595158}
   main: {fileID: 1774595157}
   editValues: {fileID: 1681551393}
@@ -97837,6 +97854,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentActiveChannel: 0
+  currentActiveArray: 0
   com: {fileID: 1774595158}
   main: {fileID: 1774595157}
   editValues: {fileID: 1681551393}

@@ -129,6 +129,7 @@ public class EditValues : MonoBehaviour
 		if (Input.GetKeyDown(KeyCode.Return) && readyToApply && inputField.text != string.Empty || Input.GetKeyDown(KeyCode.KeypadEnter) && readyToApply && inputField.text != string.Empty)
 		{
 			ApplyValue();
+			The.arrayChangedLocally[The.currentArray, The.currentChannel] = true;
 			readyToApply = false;
 		}
 

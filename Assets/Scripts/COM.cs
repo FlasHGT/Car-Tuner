@@ -9,6 +9,7 @@ public class COM : MonoBehaviour
 	public SerialPort serialPort = new SerialPort();
 
 	[HideInInspector] public string[] importMessage = { "a", "b", "d" };
+	[HideInInspector] public string[] writeMessage = { "a", "b", "u" };
 	[HideInInspector] public string[] channelSwitcher = { "b", "e", "p", "0", "1", "2", "3", "4" };
 	
 	// channelData[0][0] - Array T12 and Channel 1
@@ -26,7 +27,7 @@ public class COM : MonoBehaviour
 	[SerializeField] Button connectButton = null;
 
 	private string readMessage = string.Empty;
-	private int currentMessage = 0;
+	public int currentMessage = 0;
 
 	private List<string> portNames = new List<string>();
 
@@ -96,6 +97,7 @@ public class COM : MonoBehaviour
 			for (int k = 0; k < 2; k++)
 			{
 				channelData[k, i] = string.Empty;
+				The.arrayChangedLocally[k, i] = false;
 				while (true)
 				{
 					readMessage = serialPort.ReadLine();
@@ -116,6 +118,8 @@ public class COM : MonoBehaviour
 				print(channelData[k, i]);
 			}
 		}
+		The.main.RefreshArray(0, The.currentChannel);
+		The.main.RefreshArray(1, The.currentChannel);
 		serialPort.Close();
 	}
 
