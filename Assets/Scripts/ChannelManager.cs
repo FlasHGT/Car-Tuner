@@ -165,7 +165,6 @@ public class ChannelManager : MonoBehaviour
 		}
 		else if ((com.hasConnected && !The.arrayChangedLocally[The.currentArray, i]) || (com.isDataRead && !The.arrayChangedLocally[The.currentArray, i]))
 		{
-			print("wtf, how?");
 			main.RefreshArray(The.currentArray, The.currentChannel);
 		}
 		else

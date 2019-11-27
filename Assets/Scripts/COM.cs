@@ -3,6 +3,7 @@ using System.IO.Ports;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System;
 
 public class COM : MonoBehaviour
 {
@@ -40,8 +41,24 @@ public class COM : MonoBehaviour
 		serialPort.Parity = Parity.None;
 		serialPort.StopBits = StopBits.One;
 
-		hasConnected = true;
-		statusManager.statusText.text = "Sucessfuly connected to " + serialPort.PortName + " port.";
+		OpenPort();
+	}
+
+	public void OpenPort()
+	{
+		try
+		{
+			serialPort.Open();
+			hasConnected = true;
+			statusManager.statusText.text = "Opening " + serialPort.PortName + " port.";
+		}
+		catch (Exception ex)
+		{
+			Debug.Log("Error opening my port: " + ex.Message);
+			statusManager.statusText.text = "Error oppening the " + serialPort.PortName + " port, maybe it's already opened?";
+			return;
+		}
+		statusManager.statusText.text = "Port " + serialPort.PortName + " successfully opened.";
 	}
 
 	private void Update()
@@ -75,7 +92,7 @@ public class COM : MonoBehaviour
 
 		if (!serialPort.IsOpen)
 		{
-			serialPort.Open();
+			OpenPort();
 		}
 
 		ReadNew();

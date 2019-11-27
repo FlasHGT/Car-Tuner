@@ -231,7 +231,7 @@ public class Main : MonoBehaviour
 
 		if (!com.serialPort.IsOpen)
 		{
-			com.serialPort.Open();
+			com.OpenPort();
 		}
 		
 
@@ -330,7 +330,6 @@ public class Main : MonoBehaviour
 		{
 			if (!The.arrayChangedLocally[The.currentArray, The.currentChannel])
 			{
-				print("dude, wtf");
 				RefreshArray(The.currentArray, The.currentChannel);
 			}
 				
