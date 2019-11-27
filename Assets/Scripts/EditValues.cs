@@ -6,8 +6,6 @@ using UnityEngine.UI;
 public class EditValues : MonoBehaviour
 {
 	public static List<InputField> allSelectedInputFields = new List<InputField>();
-
-	public ChannelManager currentChannelManager = null;
 	
 	[SerializeField] GameObject panel = null;
 	[SerializeField] InputField inputField = null;
@@ -110,7 +108,7 @@ public class EditValues : MonoBehaviour
 		currentTime = Time.time;
 		inputField.text = string.Empty;
 		panel.SetActive(false);
-		currentChannelManager.SaveDataToFile(currentChannelManager.currentActiveChannel);
+		The.channelManager.SaveDataToFile(The.currentChannel);
 	}
 
 	private void Start ()

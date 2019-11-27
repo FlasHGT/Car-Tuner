@@ -20,59 +20,60 @@ public class ChannelManager : MonoBehaviour
 
 	public void ChangeProfile(int i)
 	{
+		previousChannel = The.currentChannel;
+		Debug.Log(previousChannel);
+		SaveDataToFile(previousChannel);
 		switch (i)
 		{
 			case 0:
-				SaveDataToFile(previousChannel);
+				
 				com.importMessage[1] = "b";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
 			case 1:
-				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "e";
-				PerformActions(i);
 				The.currentChannel = i;
+				PerformActions(i);
 				break;
 			case 2:
-				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "p";
-				PerformActions(i);
 				The.currentChannel = i;
+				PerformActions(i);
 				break;
 			case 3:
-				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "0";
-				PerformActions(i);
 				The.currentChannel = i;
+				PerformActions(i);
 				break;
 			case 4:
-				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "1";
-				PerformActions(i);
 				The.currentChannel = i;
+				PerformActions(i);
 				break;
 			case 5:
-				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "2";
-				PerformActions(i);
 				The.currentChannel = i;
+				PerformActions(i);
 				break;
 			case 6:
-				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "3";
-				PerformActions(i);
 				The.currentChannel = i;
+				PerformActions(i);
 				break;
 			case 7:
-				SaveDataToFile(previousChannel);
 				com.importMessage[1] = "4";
-				PerformActions(i);
 				The.currentChannel = i;
+				PerformActions(i);
 				break;
 			default:
 				break;
 		}
+	}
+
+	private void Awake()
+	{
+		The.channelManager = this;
 	}
 
 	private void Start()
@@ -82,13 +83,15 @@ public class ChannelManager : MonoBehaviour
 			Directory.CreateDirectory(Application.dataPath + "\\ChannelData\\");
 			CreateFilledFiles();
 		}
+		previousChannel = The.currentChannel;
+		PerformActions(0);
 	}
 
 	private void CreateFilledFiles()
 	{
 		for (int x = 0; x < 8; x++)
 		{
-			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + "T12" + ".csv";
+			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + "T12T3" + ".csv";
 
 			if (!File.Exists(path))
 			{
@@ -104,16 +107,7 @@ public class ChannelManager : MonoBehaviour
 					}
 				}
 
-				File.WriteAllText(path, newOutput);
-			}
-		}
-		for (int x = 0; x < 8; x++)
-		{
-			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + "T3" + ".csv";
-
-			if (!File.Exists(path))
-			{
-				string newOutput = string.Empty;
+				newOutput += "\n\n";
 
 				for (int y = 0; y < 16; y++)
 				{
@@ -128,33 +122,12 @@ public class ChannelManager : MonoBehaviour
 				File.WriteAllText(path, newOutput);
 			}
 		}
-		for (int x = 0; x < 8; x++)
-		{
-			string path = Application.dataPath + "\\ChannelData\\" + x + "_" + "T4" + ".csv";
-
-			if (!File.Exists(path))
-			{
-				string newOutput = string.Empty;
-
-				for (int y = 0; y < 16; y++)
-				{
-					newOutput += startingValues;
-
-					if (y != 15)
-					{
-						newOutput += "\n";
-					}
-				}
-
-				File.WriteAllText(path, newOutput);
-			}
-		}
+		
 	}
 
 	private void PerformActions(int i)
 	{
 		currentActiveArray = The.currentArray;
-		Debug.Log(com.hasConnected);
 
 		currentActiveChannel = i;
 		channelButtons[i].interactable = false;
@@ -163,51 +136,42 @@ public class ChannelManager : MonoBehaviour
 		{
 			ReadDataFromFile(i);
 		}
-		else if ((com.hasConnected && !The.arrayChangedLocally[The.currentArray, i]) || (com.isDataRead && !The.arrayChangedLocally[The.currentArray, i]))
+		else if (com.hasConnected && com.isDataRead)
 		{
-			main.RefreshArray(The.currentArray, The.currentChannel);
+			ReadDataFromFile(i);
+			if (!The.arrayChangedLocally[0, i])
+			{
+				//Debug.Log("Array changed locally is: " + The.arrayChangedLocally[0, i] + " refreshing array 0");
+				main.RefreshArray(0, The.currentChannel);
+			}
+			if (!The.arrayChangedLocally[1, i])
+			{
+				//Debug.Log("Array changed locally is: " + The.arrayChangedLocally[1, i] + " refreshing array 1");
+				main.RefreshArray(1, The.currentChannel);
+			}
 		}
 		else
 		{
 			ReadDataFromFile(i);
 		}
 		ResetChannels(i);
-		previousChannel = i;
 
 	}
 
 	public void SaveDataToFile(int i)
 	{
-		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + canvasGroup.name + ".csv";
+		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + "T12T3" + ".csv";
 
-		main.Export(path, true);
+		main.Export(path, false);
 	}
 
 	private void ReadDataFromFile(int i)
 	{
-		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + canvasGroup.name + ".csv";
+		string path = Application.dataPath + "\\ChannelData\\" + i + "_" + "T12T3" + ".csv";
 
 		main.Import(path);
 	}
 
-	private void Update ()
-	{
-		if (canvasGroup.alpha == 1 && !firstValuesHaveBeenSet)
-		{
-			PerformActions(0);
-			firstValuesHaveBeenSet = true;
-		}
-
-		if (canvasGroup.alpha == 1)
-		{
-			editValues.currentChannelManager = this;
-		}
-
-		if (currentActiveArray != The.currentArray)
-		{
-			ChangeProfile(The.currentChannel);
-		}
-	}
 
 	private void ResetChannels(int i)
 	{

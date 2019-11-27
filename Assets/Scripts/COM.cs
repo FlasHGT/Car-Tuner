@@ -33,6 +33,18 @@ public class COM : MonoBehaviour
 
 	private List<string> portNames = new List<string>();
 
+	public void ConnectButton()
+	{
+		if (hasConnected)
+		{
+			COMDisconnect();
+		}
+		else
+		{
+			SaveSettings();
+		}
+	}
+
 	public void SaveSettings()
 	{
 		serialPort.PortName = portNames[portName.value];
@@ -42,6 +54,12 @@ public class COM : MonoBehaviour
 		serialPort.StopBits = StopBits.One;
 
 		OpenPort();
+	}
+
+	public void ClosePort()
+	{
+		serialPort.Close();
+		hasConnected = false;
 	}
 
 	public void OpenPort()
@@ -59,14 +77,14 @@ public class COM : MonoBehaviour
 			return;
 		}
 		statusManager.statusText.text = "Port " + serialPort.PortName + " successfully opened.";
+		
 	}
 
 	private void Update()
 	{
-		if (portName.options[portName.value].text.Equals(serialPort.PortName) && hasConnected)
+		if (hasConnected)
 		{
 			connectButtonText.text = "Disconnect";
-			connectButton.onClick.AddListener(COMDisconnect);
 		}
 		else
 		{
@@ -74,12 +92,11 @@ public class COM : MonoBehaviour
 		}
 	}
 
-	public void COMDisconnect ()
+	public void COMDisconnect()
 	{
-		serialPort.Close();
+		
 		statusManager.statusText.text = "Disconnected from " + serialPort.PortName + " port.";
-		hasConnected = false;
-		connectButton.onClick.AddListener(SaveSettings);
+		ClosePort();
 	}
 
 	public void ManualStart()
@@ -134,14 +151,13 @@ public class COM : MonoBehaviour
 						break;
 					}
 				}
-				print(channelData[k, i]);
+				//print(channelData[k, i]);
 			}
 		}
 		readMessage = string.Empty;
 		isDataRead = true;
 		The.main.RefreshArray(0, The.currentChannel);
 		The.main.RefreshArray(1, The.currentChannel);
-		serialPort.Close();
 	}
 
 	private void Start ()

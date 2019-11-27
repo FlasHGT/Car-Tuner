@@ -12,8 +12,6 @@ public class Main : MonoBehaviour
 
 	[SerializeField] GameObject editValuesPanel = null;
 
-	[SerializeField] ChannelManager[] channelManagers = null;
-
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
@@ -152,38 +150,17 @@ public class Main : MonoBehaviour
 			}
 			reader.Close();
 		}
-		else
-		{
-			CheckTheActiveDataTable();
-
-			reader = new StreamReader(importPath);
-
-			for (int x = 0; x < 16; x++)
-			{
-				string line = reader.ReadLine();
-
-				foreach (char c in line.ToCharArray())
-				{
-					if (c.ToString() == "," || c.ToString() == " ")
-					{
-						currentDataTable[inputFieldSpot].text = output;
-						output = string.Empty;
-						inputFieldSpot++;
-					}
-					else
-					{
-						output += c;
-					}
-				}
-			}
-			reader.Close();
-		}
-
 		Reset();
 	}
 
 	public void WriteComport()
 	{
+		if (!com.serialPort.IsOpen)
+		{
+			com.statusManager.statusText.text = "Please connect the device and try again.";
+			return;
+		}
+
 		com.statusManager.statusText.text = "Preparing data for transfer to device...";
 		Reset();
 		
@@ -229,10 +206,7 @@ public class Main : MonoBehaviour
 			com.statusManager.statusText.text = "Writing data to device has failed!";
 		};
 
-		if (!com.serialPort.IsOpen)
-		{
-			com.OpenPort();
-		}
+		
 		
 
 		com.writeMessage[1] = com.channelSwitcher[The.currentChannel];
@@ -249,8 +223,6 @@ public class Main : MonoBehaviour
 			xmodem.CancelOperation();
 		}
 
-		// Dispose of port.
-		com.serialPort.Close();
 		Reset();
 	}
 
@@ -297,8 +269,7 @@ public class Main : MonoBehaviour
 
 		
 		com.statusManager.statusText.text = "Data reading from device has completed!";
-		com.serialPort.Close();
-		channelManagers[0].SaveDataToFile(channelManagers[0].currentActiveChannel);		
+		The.channelManager.SaveDataToFile(The.currentChannel);		
 	}
 
 	private void CheckTheActiveDataTable()
