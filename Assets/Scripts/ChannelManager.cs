@@ -155,31 +155,26 @@ public class ChannelManager : MonoBehaviour
 	{
 		currentActiveArray = The.currentArray;
 		Debug.Log(com.hasConnected);
-		if (!com.hasConnected)
+
+		currentActiveChannel = i;
+		channelButtons[i].interactable = false;
+
+		if (!com.isDataRead)
 		{
-			currentActiveChannel = i;
-			channelButtons[i].interactable = false;
 			ReadDataFromFile(i);
-			ResetChannels(i);
-			previousChannel = i;
 		}
-		else if (com.hasConnected && !The.arrayChangedLocally[The.currentArray, i])
+		else if ((com.hasConnected && !The.arrayChangedLocally[The.currentArray, i]) || (com.isDataRead && !The.arrayChangedLocally[The.currentArray, i]))
 		{
-			currentActiveChannel = i;
-			channelButtons[i].interactable = false;
-			ResetChannels(i);
-			previousChannel = i;
+			print("wtf, how?");
 			main.RefreshArray(The.currentArray, The.currentChannel);
 		}
 		else
 		{
-			currentActiveChannel = i;
-			channelButtons[i].interactable = false;
 			ReadDataFromFile(i);
-			ResetChannels(i);
-			previousChannel = i;
 		}
-		
+		ResetChannels(i);
+		previousChannel = i;
+
 	}
 
 	public void SaveDataToFile(int i)

@@ -27,6 +27,7 @@ public class COM : MonoBehaviour
 	[SerializeField] Button connectButton = null;
 
 	private string readMessage = string.Empty;
+	public bool isDataRead = false;
 	public int currentMessage = 0;
 
 	private List<string> portNames = new List<string>();
@@ -82,7 +83,7 @@ public class COM : MonoBehaviour
 
 	private void ReadNew()
 	{
-		
+		currentMessage = 0;
 		for (int i = 0; i < 8; i++)
 		{
 			importMessage[1] = channelSwitcher[i];
@@ -98,6 +99,7 @@ public class COM : MonoBehaviour
 			{
 				channelData[k, i] = string.Empty;
 				The.arrayChangedLocally[k, i] = false;
+				
 				while (true)
 				{
 					readMessage = serialPort.ReadLine();
@@ -118,6 +120,8 @@ public class COM : MonoBehaviour
 				print(channelData[k, i]);
 			}
 		}
+		readMessage = string.Empty;
+		isDataRead = true;
 		The.main.RefreshArray(0, The.currentChannel);
 		The.main.RefreshArray(1, The.currentChannel);
 		serialPort.Close();

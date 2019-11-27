@@ -229,7 +229,11 @@ public class Main : MonoBehaviour
 			com.statusManager.statusText.text = "Writing data to device has failed!";
 		};
 
-		com.serialPort.Open();
+		if (!com.serialPort.IsOpen)
+		{
+			com.serialPort.Open();
+		}
+		
 
 		com.writeMessage[1] = com.channelSwitcher[The.currentChannel];
 		com.currentMessage = 0;
@@ -322,10 +326,14 @@ public class Main : MonoBehaviour
 
 	private void Update()
 	{
-		if(The.currentChannel != channelUpdated && com.hasConnected)
+		if (The.currentChannel != channelUpdated && com.hasConnected && com.isDataRead)
 		{
-			if(!The.arrayChangedLocally[The.currentArray, The.currentChannel])
-			RefreshArray(The.currentArray, The.currentChannel);
+			if (!The.arrayChangedLocally[The.currentArray, The.currentChannel])
+			{
+				print("dude, wtf");
+				RefreshArray(The.currentArray, The.currentChannel);
+			}
+				
 		}
 
 		if (Selectable.currentlySelected.Count >= 2)
