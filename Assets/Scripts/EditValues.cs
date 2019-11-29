@@ -6,7 +6,12 @@ using UnityEngine.UI;
 public class EditValues : MonoBehaviour
 {
 	public static List<InputField> allSelectedInputFields = new List<InputField>();
-	
+
+	public ChannelManager currentChannelManager = null;
+
+	[SerializeField] float minInputFieldValue = 0f;
+	[SerializeField] float maxInputFieldValue = 500f;
+
 	[SerializeField] GameObject panel = null;
 	[SerializeField] InputField inputField = null;
 	[SerializeField] Toggle toggle = null;
@@ -22,36 +27,38 @@ public class EditValues : MonoBehaviour
 			{
 				foreach (InputField i in allSelectedInputFields)
 				{
-					string newValue = string.Empty;
+					float newValue = 0f;
 
 					if (inputField.text == string.Empty)
 					{
-						newValue = "0";
+						newValue = 0f;
 					}
 					else
 					{
-						newValue = inputField.text;
+						newValue = float.Parse(inputField.text);
+						newValue = CheckIfValueIsBetweenBounds(newValue);
 					}
 
-					i.text = newValue;
-					i.textComponent.text = newValue;
+					i.text = newValue.ToString();
+					i.textComponent.text = newValue.ToString();
 				}
 			}
 			else
 			{
-				string newValue = string.Empty;
+				float newValue = 0f;
 
 				if (inputField.text == string.Empty)
 				{
-					newValue = "0";
+					newValue = 0f;
 				}
 				else
 				{
-					newValue = inputField.text;
+					newValue = float.Parse(inputField.text);
+					newValue = CheckIfValueIsBetweenBounds(newValue);
 				}
 
-				allSelectedInputFields[0].text = newValue;
-				allSelectedInputFields[0].textComponent.text = newValue;
+				allSelectedInputFields[0].text = newValue.ToString();
+				allSelectedInputFields[0].textComponent.text = newValue.ToString();
 			}
 		}
 		else
@@ -69,6 +76,7 @@ public class EditValues : MonoBehaviour
 					else
 					{
 						newValue = float.Parse(i.text) + float.Parse(inputField.text);
+						newValue = CheckIfValueIsBetweenBounds(newValue);
 					}
 
 					i.text = newValue.ToString();
@@ -86,6 +94,7 @@ public class EditValues : MonoBehaviour
 				else
 				{
 					newValue = float.Parse(allSelectedInputFields[0].text) + float.Parse(inputField.text);
+					newValue = CheckIfValueIsBetweenBounds(newValue);
 				}
 
 				allSelectedInputFields[0].text = newValue.ToString();
@@ -109,6 +118,20 @@ public class EditValues : MonoBehaviour
 		inputField.text = string.Empty;
 		panel.SetActive(false);
 		The.channelManager.SaveDataToFile(The.currentChannel);
+	}
+
+	private float CheckIfValueIsBetweenBounds(float newValue)
+	{
+		if (newValue < minInputFieldValue)
+		{
+			newValue = 0f;
+		}
+		else if (newValue > maxInputFieldValue)
+		{
+			newValue = 500f;
+		}
+
+		return newValue;
 	}
 
 	private void Start ()

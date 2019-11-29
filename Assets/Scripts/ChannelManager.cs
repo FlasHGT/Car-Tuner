@@ -9,13 +9,10 @@ public class ChannelManager : MonoBehaviour
 
 	[SerializeField] COM com = null;
 	[SerializeField] Main main = null;
-	[SerializeField] EditValues editValues = null;
 
 	[SerializeField] Button[] channelButtons = null;
-	[SerializeField] CanvasGroup canvasGroup = null;
 
 	private int previousChannel = 0;
-	private bool firstValuesHaveBeenSet = false;
 	private string startingValues = "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,";
 
 	public void ChangeProfile(int i)

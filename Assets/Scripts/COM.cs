@@ -94,7 +94,6 @@ public class COM : MonoBehaviour
 
 	public void COMDisconnect()
 	{
-		
 		statusManager.statusText.text = "Disconnected from " + serialPort.PortName + " port.";
 		ClosePort();
 	}

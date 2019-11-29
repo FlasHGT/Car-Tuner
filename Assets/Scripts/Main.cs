@@ -10,16 +10,16 @@ public class Main : MonoBehaviour
 	public InputField mainInput;
 	public int channelUpdated = 0;
 
-	[SerializeField] GameObject editValuesPanel = null;
+	public InputField[] currentDataTable = null;
 
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
 	[SerializeField] CanvasGroup T12 = null;
 
-	[SerializeField] EventSystem eventSystem = null;
+	[SerializeField] GameObject editValuesPanel = null;
 
-	private InputField[] currentDataTable = null;
+	[SerializeField] EventSystem eventSystem = null;
 
 	private BaseEventData eventData = null;
 
@@ -38,6 +38,18 @@ public class Main : MonoBehaviour
 		if (!editValuesPanel.activeInHierarchy)
 		{
 			Selectable.DeselectAll(eventData);
+		}
+	}
+
+	public void CheckTheActiveDataTable()
+	{
+		if (T12.alpha == 1) // Improve this if more tabs get added
+		{
+			currentDataTable = dataTableX;
+		}
+		else
+		{
+			currentDataTable = dataTableY;
 		}
 	}
 
@@ -270,18 +282,6 @@ public class Main : MonoBehaviour
 		
 		com.statusManager.statusText.text = "Data reading from device has completed!";
 		The.channelManager.SaveDataToFile(The.currentChannel);		
-	}
-
-	private void CheckTheActiveDataTable()
-	{
-		if (T12.alpha == 1) // Improve this if more tabs get added
-		{
-			currentDataTable = dataTableX;
-		}
-		else
-		{
-			currentDataTable = dataTableY;
-		}
 	}
 
 	private void Awake()

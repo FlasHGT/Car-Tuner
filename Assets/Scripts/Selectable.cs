@@ -114,18 +114,9 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 		ChangeColor();
 
-		if (float.Parse(thisInputField.text) < 0)
-		{
-			thisInputField.text = "0";
-		}
-		else if (float.Parse(thisInputField.text) > 500)
-		{
-			thisInputField.text = "500";
-		}
-
 		if (!dontChangeValue)
 		{
-			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && currentlySelected.Contains(this))
+			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && currentlySelected.Contains(this) && thisInputField.text != "500")
 			{
 				float newFloat = 0f;
 
@@ -141,7 +132,7 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 				thisInputField.text = newFloat.ToString();
 				thisInputField.textComponent.text = newFloat.ToString();
 			}
-			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && currentlySelected.Contains(this))
+			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && currentlySelected.Contains(this) && thisInputField.text != "0")
 			{
 				float newFloat = 0f;
 
