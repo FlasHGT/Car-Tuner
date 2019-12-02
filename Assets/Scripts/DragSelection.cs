@@ -49,16 +49,20 @@ public class DragSelection : MonoBehaviour
 
 		foreach (InputField i in main.currentDataTable)
 		{
-			Vector3[] corners = new Vector3[4];
-
-			i.GetComponent<RectTransform>().GetWorldCorners(corners);
-
-			foreach (Vector3 v in corners)
+			if (!EditValues.allSelectedInputFields.Contains(i))
 			{
-				if ((v.x > boxStart.x && v.y < boxStart.y) && (v.x < boxFinish.x && v.y > boxFinish.y))
+				Vector3[] corners = new Vector3[4];
+
+				i.GetComponent<RectTransform>().GetWorldCorners(corners);
+
+				foreach (Vector3 v in corners)
 				{
-					Selectable.currentlySelected.Add(i.GetComponent<Selectable>());
-					EditValues.allSelectedInputFields.Add(i.gameObject.GetComponent<InputField>());
+					if ((v.x > boxStart.x && v.y < boxStart.y) && (v.x < boxFinish.x && v.y > boxFinish.y))
+					{
+						Selectable.currentlySelected.Add(i.GetComponent<Selectable>());
+						EditValues.allSelectedInputFields.Add(i);
+						break;
+					}
 				}
 			}
 		}
