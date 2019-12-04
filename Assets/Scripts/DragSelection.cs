@@ -24,22 +24,25 @@ public class DragSelection : MonoBehaviour
 
 	private void Update ()
 	{
-		if (Input.GetMouseButton(0) && draggingHasBegun)
+		if(!main.mainInput.gameObject.activeInHierarchy)
 		{
-			Dragging();
-		}
+			if (Input.GetMouseButton(0) && draggingHasBegun)
+			{
+				Dragging();
+			}
 
-		if (Input.GetMouseButtonDown(0))
-		{
-			startPos = Input.mousePosition;
-			draggingHasBegun = true;
-		}
+			if (Input.GetMouseButtonDown(0))
+			{
+				startPos = Input.mousePosition;
+				draggingHasBegun = true;
+			}
 
-		if (Input.GetMouseButtonUp(0))
-		{
-			selectionBox = Rect.zero;
-			SelectSelectables();
-			draggingHasBegun = false;
+			if (Input.GetMouseButtonUp(0))
+			{
+				selectionBox = Rect.zero;
+				SelectSelectables();
+				draggingHasBegun = false;
+			}
 		}
 	}
 

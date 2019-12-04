@@ -86083,7 +86083,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentChannelManager: {fileID: 0}
   minInputFieldValue: 0
-  maxInputFieldValue: 500
+  maxInputFieldValue: 5000
   panel: {fileID: 1413186090}
   inputField: {fileID: 1630978837}
   toggle: {fileID: 2011530854}

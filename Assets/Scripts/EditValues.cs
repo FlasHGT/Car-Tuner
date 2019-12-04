@@ -9,12 +9,11 @@ public class EditValues : MonoBehaviour
 
 	public ChannelManager currentChannelManager = null;
 
-	[SerializeField] float minInputFieldValue = 0f;
-	[SerializeField] float maxInputFieldValue = 500f;
-
 	[SerializeField] GameObject panel = null;
 	[SerializeField] InputField inputField = null;
 	[SerializeField] Toggle toggle = null;
+
+	private RectTransform panelRT = null;
 
 	private float currentTime = 0f;
 	private bool readyToApply = false;
@@ -122,11 +121,11 @@ public class EditValues : MonoBehaviour
 
 	private float CheckIfValueIsBetweenBounds(float newValue)
 	{
-		if (newValue < minInputFieldValue)
+		if (newValue < Main.minInputFieldValue)
 		{
 			newValue = 0f;
 		}
-		else if (newValue > maxInputFieldValue)
+		else if (newValue > Main.maxInputFieldValue)
 		{
 			newValue = 500f;
 		}
@@ -137,24 +136,31 @@ public class EditValues : MonoBehaviour
 	private void Start ()
 	{
 		currentTime = Time.time;
+		panelRT = panel.GetComponent<RectTransform>();
 	}
 
 	// Update is called once per frame
 	private void Update()
     {
+		if (Input.GetKeyDown(KeyCode.Escape) || Input.GetMouseButtonDown(0) && !GetScreenCoordinates(panelRT).Contains(Input.mousePosition))
+		{
+			panel.SetActive(false);
+		}
+
 		if (inputField.isFocused)
 		{
 			readyToApply = true;
 		}
 
-		if (Input.GetKeyDown(KeyCode.Return) && readyToApply && inputField.text != string.Empty || Input.GetKeyDown(KeyCode.KeypadEnter) && readyToApply && inputField.text != string.Empty)
+		if (readyToApply && inputField.text != string.Empty && (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
 		{
 			ApplyValue();
 			The.arrayChangedLocally[The.currentArray, The.currentChannel] = true;
 			readyToApply = false;
 		}
 
-		if (Selectable.currentlySelected.Count != 0 && Input.GetKeyDown(KeyCode.Return) && !panel.activeInHierarchy && Time.time - currentTime > 0.5f|| Input.GetKeyDown(KeyCode.KeypadEnter) && Selectable.currentlySelected.Count != 0 && !panel.activeInHierarchy && Time.time - currentTime > 0.5f)
+		if(Selectable.currentlySelected.Count != 0 && !panel.activeInHierarchy && Time.time - currentTime > 0.5f &&
+			(Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Return)))
 		{
 			panel.SetActive(true);
 			inputField.ActivateInputField();
@@ -192,5 +198,17 @@ public class EditValues : MonoBehaviour
 			inputField.text = newFloat.ToString();
 			inputField.textComponent.text = newFloat.ToString();
 		}
+	}
+
+	private Rect GetScreenCoordinates(RectTransform uiElement)
+	{
+		var worldCorners = new Vector3[4];
+		uiElement.GetWorldCorners(worldCorners);
+		var result = new Rect(
+					  worldCorners[0].x,
+					  worldCorners[0].y,
+					  worldCorners[2].x - worldCorners[0].x,
+					  worldCorners[2].y - worldCorners[0].y);
+		return result;
 	}
 }

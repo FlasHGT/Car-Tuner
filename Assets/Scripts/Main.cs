@@ -15,6 +15,9 @@ public class Main : MonoBehaviour
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
+	public static float minInputFieldValue = 0f;
+	public static float maxInputFieldValue = 5000f;
+
 	[SerializeField] CanvasGroup T12 = null;
 
 	[SerializeField] GameObject editValuesPanel = null;

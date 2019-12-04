@@ -116,7 +116,9 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 		if (!dontChangeValue)
 		{
-			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && currentlySelected.Contains(this) && thisInputField.text != "500")
+			if (Input.GetKeyDown(KeyCode.UpArrow) && !mainInputField.gameObject.activeInHierarchy &&
+				currentlySelected.Count >= 2 && currentlySelected.Contains(this) &&
+				thisInputField.text != Main.maxInputFieldValue.ToString())
 			{
 				float newFloat = 0f;
 
@@ -132,7 +134,9 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 				thisInputField.text = newFloat.ToString();
 				thisInputField.textComponent.text = newFloat.ToString();
 			}
-			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy && currentlySelected.Count >= 2 && currentlySelected.Contains(this) && thisInputField.text != "0")
+			else if (Input.GetKeyDown(KeyCode.DownArrow) && !mainInputField.gameObject.activeInHierarchy &&
+				currentlySelected.Count >= 2 && currentlySelected.Contains(this) &&
+				thisInputField.text != Main.minInputFieldValue.ToString())
 			{
 				float newFloat = 0f;
 
