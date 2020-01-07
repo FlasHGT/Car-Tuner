@@ -9,8 +9,9 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 	public static HashSet<Selectable> allMySelectables = new HashSet<Selectable>();
 	public static HashSet<Selectable> currentlySelected = new HashSet<Selectable>();
 
-	public Image selectedImage = null;
-	public Color selectedColor;
+	[SerializeField] Color selectedColor;
+	[SerializeField] Image selectedImage = null;
+	[SerializeField] Image graphSelected = null;
 
 	// Main object
 	private InputField mainInputField;
@@ -83,6 +84,18 @@ public class Selectable : MonoBehaviour, ISelectHandler, IPointerClickHandler, I
 
 		EditValues.allSelectedInputFields.Clear();
 		currentlySelected.Clear();
+	}
+
+	public void GraphSelected ()
+	{
+		if (graphSelected.gameObject.activeInHierarchy)
+		{
+			graphSelected.gameObject.SetActive(false);
+		}
+		else
+		{
+			graphSelected.gameObject.SetActive(true);
+		}
 	}
 
 	public void ChangeColor ()

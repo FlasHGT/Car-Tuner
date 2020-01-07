@@ -123,11 +123,11 @@ public class EditValues : MonoBehaviour
 	{
 		if (newValue < Main.minInputFieldValue)
 		{
-			newValue = 0f;
+			newValue = Main.minInputFieldValue;
 		}
 		else if (newValue > Main.maxInputFieldValue)
 		{
-			newValue = 500f;
+			newValue = Main.maxInputFieldValue;
 		}
 
 		return newValue;

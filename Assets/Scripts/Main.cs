@@ -7,6 +7,9 @@ using XModemProtocol;
 
 public class Main : MonoBehaviour
 {
+	public static float minInputFieldValue = 0f;
+	public static float maxInputFieldValue = 5000f;
+
 	public InputField mainInput;
 	public int channelUpdated = 0;
 
@@ -14,9 +17,6 @@ public class Main : MonoBehaviour
 
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
-
-	public static float minInputFieldValue = 0f;
-	public static float maxInputFieldValue = 5000f;
 
 	[SerializeField] CanvasGroup T12 = null;
 
@@ -58,7 +58,7 @@ public class Main : MonoBehaviour
 
 	public void Export(string exportPath, bool writingFromOneDataTable)
 	{
-		if(!writingFromOneDataTable)
+		if (!writingFromOneDataTable)
 		{
 			for (int x = 0; x < dataTableX.Length; x++)
 			{
@@ -165,6 +165,7 @@ public class Main : MonoBehaviour
 			}
 			reader.Close();
 		}
+
 		Reset();
 	}
 
@@ -175,6 +176,8 @@ public class Main : MonoBehaviour
 			com.statusManager.statusText.text = "Please connect the device and try again.";
 			return;
 		}
+
+		com.DisableBenchmark();
 
 		com.statusManager.statusText.text = "Preparing data for transfer to device...";
 		Reset();
@@ -221,9 +224,6 @@ public class Main : MonoBehaviour
 			com.statusManager.statusText.text = "Writing data to device has failed!";
 		};
 
-		
-		
-
 		com.writeMessage[1] = com.channelSwitcher[The.currentChannel];
 		com.currentMessage = 0;
 		while (com.currentMessage < com.writeMessage.Length)
@@ -238,6 +238,7 @@ public class Main : MonoBehaviour
 			xmodem.CancelOperation();
 		}
 
+		com.EnableBenchmark();
 		Reset();
 	}
 
@@ -279,12 +280,15 @@ public class Main : MonoBehaviour
 			return;
 		}
 
+		com.DisableBenchmark();
+
 		com.statusManager.statusText.text = "Reading data from the device...";
 		com.ManualStart();
 
-		
 		com.statusManager.statusText.text = "Data reading from device has completed!";
-		The.channelManager.SaveDataToFile(The.currentChannel);		
+		The.channelManager.SaveDataToFile(The.currentChannel);
+
+		com.EnableBenchmark();
 	}
 
 	private void Awake()
@@ -295,7 +299,6 @@ public class Main : MonoBehaviour
 	private void Start()
 	{
 		com = GetComponent<COM>();
-		
 	}
 
 	private void Update()
