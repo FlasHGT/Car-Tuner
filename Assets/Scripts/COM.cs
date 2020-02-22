@@ -1,9 +1,11 @@
-﻿using UnityEngine;
-using System.IO.Ports;
-using UnityEngine.UI;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Ports;
 using System.Text.RegularExpressions;
-using System;
+using UnityEngine;
+using UnityEngine.UI;
 
 public class COM : MonoBehaviour
 {
@@ -16,11 +18,7 @@ public class COM : MonoBehaviour
 
 	public float updateGraphEverySeconds = 1f;
 	public float currentGraphTime = 0f;
-	[HideInInspector] public bool benchmarkRunning = false;
 	[HideInInspector] public bool benchmarkNeedsReset = true;
-
-	private int xValue = 0;
-	private int yValue = 0;
 
 	// channelData[0][0] - Array T12 and Channel 1
 	// channelData[1][0] - Array T3 and Channel 1
@@ -29,13 +27,10 @@ public class COM : MonoBehaviour
 	public bool hasConnected = false;
 	public StatusManager statusManager;
 
-	[SerializeField] InputField currentSelected = null;
-
 	[HideInInspector] public string output = string.Empty;
 	[HideInInspector] public string output2 = string.Empty;
 
 	[SerializeField] Dropdown portName = null;
-	[SerializeField] Text connectButtonText = null;
 	[SerializeField] CanvasGroup T12 = null;
 	[SerializeField] Graph graph = null;
 
@@ -43,14 +38,15 @@ public class COM : MonoBehaviour
 	public bool isDataRead = false;
 	public int currentMessage = 0;
 
-	private string xAndYOutput = string.Empty;
-	private string graphStartValueOutput = string.Empty;
-	private string graphEndValueOutput = string.Empty;
-	private int graphOutputValueCount = 0;
+	public string message;
 
 	private List<string> portNames = new List<string>();
 
+	private List<string> benchmarkValues = new List<string>();
+
 	private Main main = null;
+
+	private Coroutine readCoroutine = null;
 
 	public void ConnectButton()
 	{
@@ -79,6 +75,7 @@ public class COM : MonoBehaviour
 	{
 		serialPort.Close();
 		hasConnected = false;
+		//DisableBenchmark();
 	}
 
 	public void OpenPort()
@@ -95,11 +92,10 @@ public class COM : MonoBehaviour
 			statusManager.statusText.text = "Error oppening the " + serialPort.PortName + " port, maybe it's already opened?";
 			return;
 		}
-		statusManager.statusText.text = "Port " + serialPort.PortName + " successfully opened.";
-		
-		GetValuesForGraph();
-		benchmarkRunning = true;
-		currentGraphTime = Time.time;
+		statusManager.statusText.text = $"Port {serialPort.PortName} sucessfully opened.";
+
+		//EnableBenchmark();
+		EnableDataRead();
 	}
 
 	public void COMDisconnect()
@@ -121,22 +117,27 @@ public class COM : MonoBehaviour
 			OpenPort();
 		}
 
+		StartCoroutine(ReadNewData());
+	}
+
+	public IEnumerator ReadNewData()
+	{
+		ExitBenchmarkMode();
+		yield return null;
 		ReadNew();
+	}
+
+	private void ExitBenchmarkMode()
+	{
+		if (The.benchmarkRunning)
+		{
+			serialPort.Write("b");
+			The.benchmarkRunning = false;
+		}
 	}
 
 	public void GetValuesForGraph()
 	{
-		if (!hasConnected)
-		{
-			statusManager.statusText.text = "Please connect the device and try again.";
-			return;
-		}
-
-		if (!serialPort.IsOpen)
-		{
-			OpenPort();
-		}
-
 		if (benchmarkNeedsReset)
 		{
 			currentMessage = 0;
@@ -153,197 +154,71 @@ public class COM : MonoBehaviour
 			benchmarkNeedsReset = false;
 		}
 
-		while (true)
+		//StartCoroutine("ReadSerialPort");
+
+	}
+
+	public IEnumerator ReadBenchmarkData()
+	{
+		int bytesToRead = 0;
+		if (hasConnected)
 		{
-			readMessage = serialPort.ReadTo("\n");
-
-			if (readMessage.Contains("$B,C,"))
+			while (true)
 			{
-				readMessage = readMessage.Replace("$B,C,", "");
-
-				foreach (char c in readMessage.ToCharArray())
+				bytesToRead = serialPort.BytesToRead;
+				if (bytesToRead > 0)
 				{
-					if (c.ToString() == "," || c.ToString() == " ")
-					{
-						graphOutputValueCount++;
+					byte[] input = new byte[bytesToRead];
+					serialPort.Read(input, 0, bytesToRead);
 
-						if (graphOutputValueCount <= 4)
-						{
-							if (T12.alpha == 1 && graphOutputValueCount <= 2)
-							{
-								CalculateInputField(1);
-							}
-							else if (T12.alpha == 0 && graphOutputValueCount > 2)
-							{
-								CalculateInputField(3);
-							}
-
-							xAndYOutput = string.Empty;
-						}
-						else
-						{
-							break;
-						}
-					}
-					else
-					{
-						xAndYOutput += c;
-					}
+					message = System.Text.Encoding.UTF8.GetString(input);
+					Debug.Log("reading");
 				}
-
-				xAndYOutput = string.Empty;
-				graphOutputValueCount = 0;
-			}
-
-			if (readMessage.Contains("$B,D,"))
-			{
-				readMessage = readMessage.Replace("$B,D,", "");
-
-				foreach (char c in readMessage.ToCharArray())
-				{
-					if (c.ToString() == ",")
-					{
-						graphOutputValueCount++;
-
-						if (graphOutputValueCount <= 2)
-						{
-							if (T12.alpha == 1 && graphOutputValueCount == 1)
-							{
-								if (graph.startValue.Count >= graph.maxObjectsInList)
-								{
-									graph.startValue.RemoveAt(0);
-
-								}
-
-								graph.startValue.Add(float.Parse(graphStartValueOutput));
-							}
-							else if (T12.alpha == 0 && graphOutputValueCount == 2)
-							{
-								if (graph.startValue.Count >= graph.maxObjectsInList)
-								{
-									graph.startValue.RemoveAt(0);
-								}
-
-								graph.startValue.Add(float.Parse(graphStartValueOutput));
-							}
-
-							graphStartValueOutput = string.Empty;
-						}
-						else
-						{
-							break;
-						}
-					}
-					else
-					{
-						graphStartValueOutput += c;
-					}
-				}
-
-				graphStartValueOutput = string.Empty;
-				graphOutputValueCount = 0;
-			}
-
-			if (readMessage.Contains("$B,A,"))
-			{
-				readMessage = readMessage.Replace("$B,A,", "");
-
-				graphEndValueOutput = string.Empty;
-
-				foreach (char c in readMessage.ToCharArray())
-				{
-					if (c.ToString() == ",")
-					{
-						if (T12.alpha == 1)
-						{
-							if (graph.endValue.Count >= graph.maxObjectsInList)
-							{
-								graph.endValue.RemoveAt(0);
-							}
-
-							graph.endValue.Add(float.Parse(graphEndValueOutput));
-
-							return;
-						}
-
-						graphEndValueOutput = string.Empty;
-					}
-					else
-					{
-						graphEndValueOutput += c;
-					}
-
-					if (readMessage.IndexOf(c) == readMessage.Length - 1)
-					{
-						if (T12.alpha == 0)
-						{
-							if (graph.endValue.Count >= graph.maxObjectsInList)
-							{
-								graph.endValue.RemoveAt(0);
-							}
-
-							graph.endValue.Add(float.Parse(graphEndValueOutput));
-
-							return;
-						}
-
-						graphEndValueOutput = string.Empty;
-					}
-				}
+				bytesToRead = 0;
+				yield return null;
 			}
 		}
 	}
 
-	private void CalculateInputField(int valueToCompareTo)
+	public IEnumerator ReadSerialPort()
 	{
-		float newValue = float.Parse(xAndYOutput);
-
-		if (newValue >= 16) // Making sure that the value is not higher than 15, so the value is not higher than 255.
-		{
-			return;
-		}
-
-		Math.Floor(newValue);
-
-		if (graphOutputValueCount == valueToCompareTo)
-		{
-			xValue = (int)newValue;
-		}
-		else
-		{
-			yValue = (int)newValue;
-
-			main.CheckTheActiveDataTable();
-			InputField currentInputField = main.currentDataTable[xValue + 16 * yValue];
-
-			if (currentSelected != null)
-			{
-				currentSelected.GetComponent<Selectable>().GraphSelected();
-			}
-
-			currentSelected = currentInputField;
-			currentSelected.GetComponent<Selectable>().GraphSelected();
-		}
+		readMessage = serialPort.ReadTo("\n");
+		Debug.Log(readMessage);
+		yield return null;
 	}
 
 	public void EnableBenchmark()
 	{
-		if (hasConnected)
+		currentGraphTime = Time.time;
+		Debug.Log("Enabling benchmark");
+		graph.Reset();
+		serialPort.Write("b");
+		The.benchmarkRunning = true;
+	}
+
+	public void EnableDataRead()
+	{
+		Debug.Log("Enabling Benchmark on device");
+		if (serialPort.IsOpen)
 		{
-			graph.Reset();
+			Debug.Log("Starting benchmark data read");
 			serialPort.Write("b");
-			benchmarkRunning = true;
+			The.benchmarkRunning = true;
+			readCoroutine = StartCoroutine(ReadBenchmarkData());
 		}
 	}
 
 	public void DisableBenchmark()
 	{
-		if (hasConnected)
+		if (readCoroutine != null)
 		{
-			benchmarkRunning = false;
-			serialPort.Write("b");
-			benchmarkNeedsReset = true;
+			StopCoroutine(readCoroutine);
+			readCoroutine = null;
 		}
+
+		The.benchmarkRunning = false;
+		serialPort.Write("b");
+		//benchmarkNeedsReset = true;
 	}
 
 	private void ReadNew()
@@ -363,7 +238,7 @@ public class COM : MonoBehaviour
 			{
 				channelData[k, i] = string.Empty;
 				The.arrayChangedLocally[k, i] = false;
-				
+
 				while (true)
 				{
 					readMessage = serialPort.ReadLine();
@@ -387,34 +262,11 @@ public class COM : MonoBehaviour
 		isDataRead = true;
 		The.main.RefreshArray(0, The.currentChannel);
 		The.main.RefreshArray(1, The.currentChannel);
+
+		EnableDataRead();
 	}
 
-	private void Start ()
-	{
-		main = GetComponent<Main>();
-
-		FillComPortNames();
-	}
-
-	private void Update()
-	{
-		if (hasConnected)
-		{
-			connectButtonText.text = "Disconnect";
-		}
-		else
-		{
-			connectButtonText.text = "Connect";
-		}
-
-		if (Time.time - currentGraphTime > updateGraphEverySeconds && benchmarkRunning)
-		{
-			GetValuesForGraph();
-			currentGraphTime = Time.time;
-		}
-	}
-
-	private void FillComPortNames ()
+	public void FillComPortNames()
 	{
 		portName.ClearOptions();
 
@@ -426,10 +278,21 @@ public class COM : MonoBehaviour
 		portName.AddOptions(portNames);
 	}
 
-	private void OnApplicationQuit()
-	{
-		DisableBenchmark();
-		serialPort.Close();
-	}
 
+	public void ReadComport()
+	{
+		if (!hasConnected)
+		{
+			ManualStart();
+			return;
+		}
+
+		statusManager.statusText.text = "Reading data from the device...";
+		ManualStart();
+
+
+		statusManager.statusText.text = "Data reading from device has completed!";
+		The.channelManager.SaveDataToFile(The.currentChannel);
+
+	}
 }

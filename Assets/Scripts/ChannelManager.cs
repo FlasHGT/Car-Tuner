@@ -17,7 +17,12 @@ public class ChannelManager : MonoBehaviour
 
 	public void ChangeProfile(int i)
 	{
-		com.DisableBenchmark();
+		//while (The.benchmarkRunning)
+		//{
+		//	Debug.Log("Disabling benchmark mode & switching profile");
+		//	com.DisableBenchmark();
+		//}
+		
 		previousChannel = The.currentChannel;
 		SaveDataToFile(previousChannel);
 		switch (i)
@@ -74,7 +79,7 @@ public class ChannelManager : MonoBehaviour
 				break;
 		}
 
-		com.EnableBenchmark();
+		//com.EnableBenchmark();
 	}
 
 	private void Awake()

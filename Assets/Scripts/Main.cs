@@ -4,6 +4,9 @@ using UnityEngine.UI;
 using System.Text;
 using UnityEngine.EventSystems;
 using XModemProtocol;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Main : MonoBehaviour
 {
@@ -36,6 +39,19 @@ public class Main : MonoBehaviour
 
 	private string output;
 
+
+	private string xAndYOutput = string.Empty;
+	private string graphStartValueOutput = string.Empty;
+	private string graphEndValueOutput = string.Empty;
+	private int graphOutputValueCount = 0;
+
+	private int xValue = 0;
+	private int yValue = 0;
+
+	[SerializeField] Text connectButtonText = null;
+
+	[SerializeField] InputField currentSelected = null;
+
 	public void Deselect()
 	{
 		if (!editValuesPanel.activeInHierarchy)
@@ -58,6 +74,7 @@ public class Main : MonoBehaviour
 
 	public void Export(string exportPath, bool writingFromOneDataTable)
 	{
+
 		if (!writingFromOneDataTable)
 		{
 			for (int x = 0; x < dataTableX.Length; x++)
@@ -226,11 +243,14 @@ public class Main : MonoBehaviour
 
 		com.writeMessage[1] = com.channelSwitcher[The.currentChannel];
 		com.currentMessage = 0;
+		
 		while (com.currentMessage < com.writeMessage.Length)
 		{
 			com.serialPort.Write(com.writeMessage[com.currentMessage]);
 			com.currentMessage++;
 		}
+		
+		
 		xmodem.Send();
 
 		if (xmodem.State != XModemStates.Idle)
@@ -238,7 +258,7 @@ public class Main : MonoBehaviour
 			xmodem.CancelOperation();
 		}
 
-		com.EnableBenchmark();
+		com.EnableDataRead();
 		Reset();
 	}
 
@@ -272,24 +292,7 @@ public class Main : MonoBehaviour
 		Reset();
 	}
 
-	public void ReadComport()
-	{
-		if (!com.hasConnected)
-		{
-			com.ManualStart();
-			return;
-		}
-
-		com.DisableBenchmark();
-
-		com.statusManager.statusText.text = "Reading data from the device...";
-		com.ManualStart();
-
-		com.statusManager.statusText.text = "Data reading from device has completed!";
-		The.channelManager.SaveDataToFile(The.currentChannel);
-
-		com.EnableBenchmark();
-	}
+	
 
 	private void Awake()
 	{
@@ -299,6 +302,7 @@ public class Main : MonoBehaviour
 	private void Start()
 	{
 		com = GetComponent<COM>();
+		com.FillComPortNames();
 	}
 
 	private void Update()
@@ -320,6 +324,15 @@ public class Main : MonoBehaviour
 		{
 			eventSystem.sendNavigationEvents = true;
 		}
+
+		if (com.hasConnected)
+		{
+			connectButtonText.text = "Disconnect";
+		}
+		else
+		{
+			connectButtonText.text = "Connect";
+		}
 	}
 
 	private void Reset()
@@ -328,5 +341,185 @@ public class Main : MonoBehaviour
 		inputFieldOffset = 15;
 		inputFieldSpot = 0;
 		lineCount = 0;
+	}
+
+
+	private void CalculateInputField(int valueToCompareTo)
+	{
+		float newValue = float.Parse(xAndYOutput);
+
+		if (newValue >= 16) // Making sure that the value is not higher than 15, so the value is not higher than 255.
+		{
+			return;
+		}
+
+		Math.Floor(newValue);
+
+		if (graphOutputValueCount == valueToCompareTo)
+		{
+			xValue = (int)newValue;
+		}
+		else
+		{
+			yValue = (int)newValue;
+
+			CheckTheActiveDataTable();
+			InputField currentInputField = currentDataTable[xValue + 16 * yValue];
+
+			if (currentSelected != null)
+			{
+				currentSelected.GetComponent<Selectable>().GraphSelected();
+			}
+
+			currentSelected = currentInputField;
+			currentSelected.GetComponent<Selectable>().GraphSelected();
+		}
+	}
+
+	public void GetValuesForGraph()
+	{
+		while (true)
+		{
+			if (com.message.Contains("$B,C,"))
+			{
+				com.message = com.message.Replace("$B,C,", "");
+
+				foreach (char c in com.message.ToCharArray())
+				{
+					if (c.ToString() == "," || c.ToString() == " ")
+					{
+						graphOutputValueCount++;
+
+						if (graphOutputValueCount <= 4)
+						{
+							if (T12.alpha == 1 && graphOutputValueCount <= 2)
+							{
+								CalculateInputField(1);
+							}
+							else if (T12.alpha == 0 && graphOutputValueCount > 2)
+							{
+								CalculateInputField(3);
+							}
+
+							xAndYOutput = string.Empty;
+						}
+						else
+						{
+							break;
+						}
+					}
+					else
+					{
+						xAndYOutput += c;
+					}
+				}
+
+				xAndYOutput = string.Empty;
+				graphOutputValueCount = 0;
+			}
+
+			if (com.message.Contains("$B,D,"))
+			{
+				com.message = com.message.Replace("$B,D,", "");
+
+				foreach (char c in com.message.ToCharArray())
+				{
+					if (c.ToString() == ",")
+					{
+						graphOutputValueCount++;
+
+						if (graphOutputValueCount <= 2)
+						{
+							if (T12.alpha == 1 && graphOutputValueCount == 1)
+							{
+								if (The.graph.startValue.Count >= The.graph.maxObjectsInList)
+								{
+									The.graph.startValue.RemoveAt(0);
+
+								}
+
+								The.graph.startValue.Add(float.Parse(graphStartValueOutput));
+							}
+							else if (T12.alpha == 0 && graphOutputValueCount == 2)
+							{
+								if (The.graph.startValue.Count >= The.graph.maxObjectsInList)
+								{
+									The.graph.startValue.RemoveAt(0);
+								}
+
+								The.graph.startValue.Add(float.Parse(graphStartValueOutput));
+							}
+
+							graphStartValueOutput = string.Empty;
+						}
+						else
+						{
+							break;
+						}
+					}
+					else
+					{
+						graphStartValueOutput += c;
+					}
+				}
+
+				graphStartValueOutput = string.Empty;
+				graphOutputValueCount = 0;
+			}
+
+			if (com.message.Contains("$B,A,"))
+			{
+				com.message = com.message.Replace("$B,A,", "");
+
+				graphEndValueOutput = string.Empty;
+
+				foreach (char c in com.message.ToCharArray())
+				{
+					if (c.ToString() == ",")
+					{
+						if (T12.alpha == 1)
+						{
+							if (The.graph.endValue.Count >= The.graph.maxObjectsInList)
+							{
+								The.graph.endValue.RemoveAt(0);
+							}
+
+							The.graph.endValue.Add(float.Parse(graphEndValueOutput));
+
+							return;
+						}
+
+						graphEndValueOutput = string.Empty;
+					}
+					else
+					{
+						graphEndValueOutput += c;
+					}
+
+					if (com.message.IndexOf(c) == com.message.Length - 1)
+					{
+						if (T12.alpha == 0)
+						{
+							if (The.graph.endValue.Count >= The.graph.maxObjectsInList)
+							{
+								The.graph.endValue.RemoveAt(0);
+							}
+
+							The.graph.endValue.Add(float.Parse(graphEndValueOutput));
+
+							return;
+						}
+
+						graphEndValueOutput = string.Empty;
+					}
+				}
+			}
+		}
+	}
+
+	private void OnApplicationQuit()
+	{
+		//DisableBenchmark();
+		com.serialPort.Close();
 	}
 }

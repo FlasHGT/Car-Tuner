@@ -68,6 +68,11 @@ public class Graph : MonoBehaviour
 		lastEndCircle = Vector2.zero;
 	}
 
+	private void Awake()
+	{
+		The.graph = this;
+	}
+
 	private void Start()
 	{
 		graphLength = graphContainer.sizeDelta.x;
@@ -85,7 +90,7 @@ public class Graph : MonoBehaviour
 			//lastValue--; // UNCOMMENT SO LINIJU, LAI STRADATU APAKSEJAIS KODS
 		}
 
-		if (lastValue < startValue.Count && com.benchmarkRunning)
+		if (lastValue < startValue.Count && The.benchmarkRunning)
 		{
 			ShowGraph(startValue, 0, startLines, startConnectorVectors, start0);
 			ShowGraph(endValue, 1, endLines, endConnectorVectors, start1);

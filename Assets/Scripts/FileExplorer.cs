@@ -10,7 +10,7 @@ public class FileExplorer : MonoBehaviour
 
 	public void FileExplorerImport()
 	{
-		com.DisableBenchmark();
+		//com.DisableBenchmark();
 
 		var paths = StandaloneFileBrowser.OpenFilePanel("Import", Application.dataPath, "csv", false);
 		
@@ -19,12 +19,12 @@ public class FileExplorer : MonoBehaviour
 			StartCoroutine(OutputRoutine(new System.Uri(paths[0]).AbsoluteUri));
 		}
 
-		com.EnableBenchmark();
+		//com.EnableBenchmark();
 	}
 
 	public void FileExplorerExport()
 	{
-		com.DisableBenchmark();
+		//com.DisableBenchmark();
 
 		var path = StandaloneFileBrowser.SaveFilePanel("Export", Application.dataPath, "sample", "csv");
 		
@@ -33,7 +33,7 @@ public class FileExplorer : MonoBehaviour
 			main.Export(path, false);
 		}
 
-		com.EnableBenchmark();
+		//com.EnableBenchmark();
 	}
 
 	private void Start ()
