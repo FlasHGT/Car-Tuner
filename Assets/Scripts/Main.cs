@@ -21,7 +21,7 @@ public class Main : MonoBehaviour
 	[SerializeField] InputField[] dataTableX = null;
 	[SerializeField] InputField[] dataTableY = null;
 
-	[SerializeField] CanvasGroup T12 = null;
+	public CanvasGroup T12 = null;
 
 	[SerializeField] GameObject editValuesPanel = null;
 

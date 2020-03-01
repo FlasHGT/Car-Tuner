@@ -11,6 +11,8 @@ using ChartAndGraph;
 
 public class COM : MonoBehaviour
 {
+	private int activeArray = 0;
+ 
 	public GraphChart graphChart;
 
 	public SerialPort serialPort = new SerialPort();
@@ -72,6 +74,18 @@ public class COM : MonoBehaviour
 	private long nextDataTicks = 0;
 	private static readonly long graphFps = TimeSpan.TicksPerSecond / 15;
 
+	private void Update()
+	{
+		if (The.main.T12.alpha == 1)
+		{
+			activeArray = 0;
+		}
+		else
+		{
+			activeArray = 1;
+		}
+	}
+
 	public void ThreadReadData()
 	{
 		try
@@ -92,6 +106,7 @@ public class COM : MonoBehaviour
 
 				if (skip) continue;
 				else nextDataTicks = ticks + graphFps;
+				
 
 				//continue;
 				if (s.Contains("$B,A,"))
@@ -99,24 +114,49 @@ public class COM : MonoBehaviour
 					s = s.Replace("$B,A,", "");
 
 					string temp = string.Empty;
+					int counter = 0;
 
 					foreach (char c in s.ToCharArray())
 					{
 						if (c == ',')
-						{
-							float.TryParse(temp, out tempBAvalue);
-							tempBAvalue = tempBAvalue / 1000;
-							//Debug.Log("BA " + tempBAvalue);
-							graphChart.DataSource.AddPointToCategoryRealtime("BA", baX, tempBAvalue);
-							//Debug.Log("Temp BA value:" + tempBAvalue);
-							baX++;
-							//return;
-							break;
+						{	
+							if (activeArray == 0)
+							{
+								float.TryParse(temp, out tempBAvalue);
+								tempBAvalue = tempBAvalue / 1000;
+								Debug.Log("BA " + tempBAvalue);
+								graphChart.DataSource.AddPointToCategoryRealtime("BA", baX, tempBAvalue);
+								//Debug.Log("Temp BA value:" + tempBAvalue);
+								baX++;
+								//return;
+								break;
+							}
+							else
+							{
+								if(counter == 0)
+								{
+									temp = string.Empty;
+									counter++;
+									continue;
+								}
+							}
+							
 						}
 						else
 						{
 							temp += c;
 						}
+					}
+					if (counter == 1)
+					{
+						float.TryParse(temp, out tempBAvalue);
+						tempBAvalue = tempBAvalue / 1000;
+						Debug.Log("BA " + tempBAvalue);
+						graphChart.DataSource.AddPointToCategoryRealtime("BA", baX, tempBAvalue);
+						//Debug.Log("Temp BA value:" + tempBAvalue);
+						baX++;
+						counter = 0;
+						//return;
 					}
 				}
 				else if (s.Contains("$B,D,"))
@@ -124,20 +164,42 @@ public class COM : MonoBehaviour
 					s = s.Replace("$B,D,", "");
 
 					string temp = string.Empty;
-
+					int counter = 0;
 					foreach (char c in s.ToCharArray())
 					{
 						if (c == ',')
 						{
-							float tempBDvalue;
-							float.TryParse(temp, out tempBDvalue);
-							tempBDvalue = tempBDvalue / 1000;
-							//Debug.Log("BD " + tempBDvalue);
-							graphChart.DataSource.AddPointToCategoryRealtime("BD", baX, tempBAvalue - tempBDvalue);
-							//Debug.Log("Temp BD value:" + tempBDvalue);
-							baX++;
-							//return;
-							break;
+							
+							if (activeArray == 0)
+							{
+								float tempBDvalue;
+								float.TryParse(temp, out tempBDvalue);
+								tempBDvalue = tempBDvalue / 1000;
+								//Debug.Log("BD " + tempBDvalue);
+								graphChart.DataSource.AddPointToCategoryRealtime("BD", baX, tempBAvalue - tempBDvalue);
+								//Debug.Log("Temp BD value:" + tempBDvalue);
+								baX++;
+								//return;
+								break;
+							}
+							else
+							{
+								if (counter == 0)
+								{
+									temp = string.Empty;
+									counter++;
+									continue;
+								}
+								float tempBDvalue;
+								float.TryParse(temp, out tempBDvalue);
+								tempBDvalue = tempBDvalue / 1000;
+								Debug.Log("BA " + tempBDvalue);
+								graphChart.DataSource.AddPointToCategoryRealtime("BD", baX, tempBAvalue - tempBDvalue);
+								//Debug.Log("Temp BA value:" + tempBAvalue);
+								baX++;
+								break;
+							}
+
 						}
 						else
 						{
@@ -492,6 +554,8 @@ public class COM : MonoBehaviour
 		yield return new WaitUntil(() => messageSent);
 		ClearSerialPortBuffer();
 		messageSent = false;
+		yield return new WaitForSeconds(0.5f);
+		ClearSerialPortBuffer();
 		EnableDataRead();
 	}
 
