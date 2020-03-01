@@ -4,21 +4,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
 using System.Text.RegularExpressions;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using ChartAndGraph;
 
 public class COM : MonoBehaviour
 {
+	public GraphChart graphChart;
+
 	public SerialPort serialPort = new SerialPort();
 
-	[HideInInspector] public string[] graphMessage = { "a", "b", "b" };
-	[HideInInspector] public string[] importMessage = { "a", "b", "d" };
-	[HideInInspector] public string[] writeMessage = { "a", "b", "u" };
-	[HideInInspector] public string[] channelSwitcher = { "b", "e", "p", "0", "1", "2", "3", "4" };
+	[HideInInspector] public string[] importMessages = {"a","b","d"};
+	[HideInInspector] public string[] writeMessages = { "a", "b", "u" };
+	[HideInInspector] public string[] channelSwitchers = { "b", "e", "p", "0", "1", "2", "3", "4" };
+
+	[HideInInspector] public char[] startBenchmark = { 'b' };
 
 	public float updateGraphEverySeconds = 1f;
 	public float currentGraphTime = 0f;
-	[HideInInspector] public bool benchmarkNeedsReset = true;
+	private bool benchmarkNeedsReset = false;
+
+	private float tempBAvalue = 0f;
 
 	// channelData[0][0] - Array T12 and Channel 1
 	// channelData[1][0] - Array T3 and Channel 1
@@ -29,10 +36,7 @@ public class COM : MonoBehaviour
 
 	[HideInInspector] public string output = string.Empty;
 	[HideInInspector] public string output2 = string.Empty;
-
 	[SerializeField] Dropdown portName = null;
-	[SerializeField] CanvasGroup T12 = null;
-	[SerializeField] Graph graph = null;
 
 	private string readMessage = string.Empty;
 	public bool isDataRead = false;
@@ -42,11 +46,111 @@ public class COM : MonoBehaviour
 
 	private List<string> portNames = new List<string>();
 
-	private List<string> benchmarkValues = new List<string>();
-
-	private Main main = null;
-
 	private Coroutine readCoroutine = null;
+
+	private string graphEndValueOutput = string.Empty;
+	private bool messageSent = false;
+
+	private int bdX = 0;
+	private int baX = 0;
+
+	private List<float> dataValuesBA = new List<float>();
+
+	private Thread readingThread;
+	private Thread threadStatus;
+
+	public void ThreadStatus()
+	{
+		string data = serialPort.ReadLine();
+		Debug.Log("Data is" + data);
+	}
+
+	//private int dataCount = 0;
+	//private long secondStart = 0;
+
+	private long nextDataTicks = 0;
+	private static readonly long graphFps = TimeSpan.TicksPerSecond / 15;
+
+	public void ThreadReadData()
+	{
+		try
+		{	
+			while (true)
+			{
+				if (benchmarkNeedsReset)
+				{
+					readingThread = null;
+					return;
+				}
+
+				long ticks = DateTime.UtcNow.Ticks;
+				bool skip = nextDataTicks > ticks;
+
+				string s = serialPort.ReadTo("\n");
+				Debug.LogWarning(s);
+
+				if (skip) continue;
+				else nextDataTicks = ticks + graphFps;
+
+				//continue;
+				if (s.Contains("$B,A,"))
+				{
+					s = s.Replace("$B,A,", "");
+
+					string temp = string.Empty;
+
+					foreach (char c in s.ToCharArray())
+					{
+						if (c == ',')
+						{
+							float.TryParse(temp, out tempBAvalue);
+							tempBAvalue = tempBAvalue / 1000;
+							Debug.Log("BA " + tempBAvalue);
+							graphChart.DataSource.AddPointToCategoryRealtime("BA", baX, tempBAvalue);
+							//Debug.Log("Temp BA value:" + tempBAvalue);
+							baX++;
+							//return;
+							break;
+						}
+						else
+						{
+							temp += c;
+						}
+					}
+				}
+				else if (s.Contains("$B,D,"))
+				{
+					s = s.Replace("$B,D,", "");
+
+					string temp = string.Empty;
+
+					foreach (char c in s.ToCharArray())
+					{
+						if (c == ',')
+						{
+							float tempBDvalue;
+							float.TryParse(temp, out tempBDvalue);
+							tempBDvalue = tempBDvalue / 1000;
+							Debug.Log("BD " + tempBDvalue);
+							graphChart.DataSource.AddPointToCategoryRealtime("BD", baX, tempBAvalue - tempBDvalue);
+							//Debug.Log("Temp BD value:" + tempBDvalue);
+							baX++;
+							//return;
+							break;
+						}
+						else
+						{
+							temp += c;
+						}
+					}
+				}
+			}
+		}
+		catch (Exception ex)
+		{
+			Debug.LogError(ex.ToString());
+		}
+	}
 
 	public void ConnectButton()
 	{
@@ -67,6 +171,7 @@ public class COM : MonoBehaviour
 		serialPort.DataBits = 8;
 		serialPort.Parity = Parity.None;
 		serialPort.StopBits = StopBits.One;
+		//serialPort.ReadTimeout = 500;
 
 		OpenPort();
 	}
@@ -94,146 +199,292 @@ public class COM : MonoBehaviour
 		}
 		statusManager.statusText.text = $"Port {serialPort.PortName} sucessfully opened.";
 
-		//EnableBenchmark();
 		EnableDataRead();
+		//StartCoroutine(CheckDeviceStatus());
+
 	}
+
+	IEnumerator CheckDeviceStatus()
+	{
+		Debug.Log("Check device status");
+		while (true)
+		{
+			if (serialPort.BytesToRead > 0)
+			{
+				try
+				{
+					string data = serialPort.ReadLine();
+					Debug.Log("Data: " + data);
+
+					if(data.Contains("$B"))
+					{
+						Debug.Log("DEVICE STATUS: Device in benchmark mode!");
+					}
+					if (data.Contains("Available"))
+					{
+						Debug.Log("DEVICE STATUS: Device in commands menu!");
+					}
+					if (data.Contains("tag:"))
+					{
+						Debug.Log("DEVICE STATUS: Device is version menu!");
+					}
+
+				}
+				catch (TimeoutException e)
+				{
+
+				}
+
+				yield return new WaitForSeconds(0.1f);
+			}
+			yield return null;
+		}
+		
+	}
+
+
 
 	public void COMDisconnect()
 	{
-		statusManager.statusText.text = "Disconnected from " + serialPort.PortName + " port.";
-		ClosePort();
+		StartCoroutine(DisableBenchmark());
+		StartCoroutine(CloseSerialPort());
 	}
 
-	public void ManualStart()
+	IEnumerator CloseSerialPort()
 	{
-		if (!hasConnected)
-		{
-			statusManager.statusText.text = "Please connect the device and try again.";
-			return;
-		}
 
-		if (!serialPort.IsOpen)
-		{
-			OpenPort();
-		}
-
-		StartCoroutine(ReadNewData());
+		yield return new WaitUntil(() => !The.benchmarkRunning);
+		serialPort.Close();
+		hasConnected = false;
+		statusManager.statusText.text = "Disconnected from " + serialPort.PortName + " port.";
 	}
 
 	public IEnumerator ReadNewData()
 	{
-		ExitBenchmarkMode();
+		//while (true)
+		//{
+		//	int bytesToRead;
+		//	bytesToRead = serialPort.BytesToRead;
+		//	if (bytesToRead > 0)
+		//	{
+		//		Debug.LogError("Device still sending DATA!!");
+		//		serialPort.DiscardInBuffer();
+
+		//		if (bytesToRead > 0)
+		//		{
+		//			Debug.LogError("Device still still still still sending DATA!!");
+		//			serialPort.Write("b");
+		//		}
+		//		else
+		//		{
+		//			break;
+		//		}
+		//	}
+		//	else
+		//	{
+		//		break;
+		//	}
+
+		//	yield return null;
+		//}
+		ClearSerialPortBuffer();
 		yield return null;
-		ReadNew();
+		//ReadNew();
+
 	}
 
-	private void ExitBenchmarkMode()
+	public string RemoveBefore(string value, string character)
 	{
-		if (The.benchmarkRunning)
+		int index = value.IndexOf(character);
+		if (index > 0)
 		{
-			serialPort.Write("b");
-			The.benchmarkRunning = false;
+			value = value.Substring(index + 1);
 		}
+		return value;
 	}
 
-	public void GetValuesForGraph()
+	public string RemoveAfter(string value, string character)
 	{
-		if (benchmarkNeedsReset)
+		int index = value.IndexOf(character);
+		if (index > 0)
 		{
-			currentMessage = 0;
-			while (currentMessage < graphMessage.Length)
+			value = value.Substring(0, index);
+		}
+		return value;
+	}
+
+	public void GetValuesForGraph(string someMessage)
+	{	
+  
+		if (someMessage.Contains("$B,A,"))
+		{
+			someMessage = someMessage.Replace("$B,A,", "");
+
+			graphEndValueOutput = string.Empty;
+
+			foreach (char c in someMessage.ToCharArray())
 			{
-				serialPort.Write(graphMessage[currentMessage]);
-				currentMessage++;
+				if (c == ',')
+				{
+					float.TryParse(graphEndValueOutput, out tempBAvalue);
+					tempBAvalue = tempBAvalue / 1000;
+					graphChart.DataSource.AddPointToCategoryRealtime("BA", baX, tempBAvalue);
+					Debug.Log("Temp BA value:" + tempBAvalue);
+					baX++;
+					return;
+				}
+				else
+				{
+					graphEndValueOutput += c;
+				}
 			}
-			currentMessage = 0;
-
-			serialPort.ReadTo("$B,B");
-			serialPort.ReadTo("\n");
-
-			benchmarkNeedsReset = false;
 		}
+		else if (someMessage.Contains("$B,D,"))
+		{
+			someMessage = someMessage.Replace("$B,D,", "");
 
-		//StartCoroutine("ReadSerialPort");
+			graphEndValueOutput = string.Empty;
 
+			foreach (char c in someMessage.ToCharArray())
+			{
+				if (c == ',')
+				{
+					float tempBDvalue;
+					float.TryParse(graphEndValueOutput, out tempBDvalue);
+					tempBDvalue = tempBDvalue / 1000;
+					graphChart.DataSource.AddPointToCategoryRealtime("BD", bdX, tempBAvalue - tempBDvalue);
+					bdX++;
+					return;
+				}
+				else
+				{
+					graphEndValueOutput += c;
+				}
+			}
+		}
+		serialPort.BaseStream.Flush();
 	}
 
 	public IEnumerator ReadBenchmarkData()
 	{
-		int bytesToRead = 0;
-		if (hasConnected)
-		{
-			while (true)
-			{
-				bytesToRead = serialPort.BytesToRead;
-				if (bytesToRead > 0)
-				{
-					byte[] input = new byte[bytesToRead];
-					serialPort.Read(input, 0, bytesToRead);
-
-					message = System.Text.Encoding.UTF8.GetString(input);
-					Debug.Log("reading");
-				}
-				bytesToRead = 0;
-				yield return null;
-			}
-		}
+		Debug.Log("Starting data read thread.");
+		readingThread = new Thread(ThreadReadData);
+		readingThread.Start();
+		//readingThread.IsBackground = true;
+		//int i = 0;			
+		//GetValuesForGraph(s);
+		
+		//Debug.Log(s);
+		//ClearSerialPortBuffer();
+		yield return null;	
+		//i++;
 	}
 
-	public IEnumerator ReadSerialPort()
+	public void ClearSerialPortBuffer()
 	{
-		readMessage = serialPort.ReadTo("\n");
-		Debug.Log(readMessage);
-		yield return null;
-	}
-
-	public void EnableBenchmark()
-	{
-		currentGraphTime = Time.time;
-		Debug.Log("Enabling benchmark");
-		graph.Reset();
-		serialPort.Write("b");
-		The.benchmarkRunning = true;
+		serialPort.BaseStream.Flush();
+		serialPort.DiscardInBuffer();
+		serialPort.DiscardOutBuffer();
 	}
 
 	public void EnableDataRead()
 	{
+
+		string temp = string.Empty;
+		byte[] buffer = new byte[1000];
+		serialPort.ReadTimeout = 500;
+		try
+		{
+			serialPort.Read(buffer, 0, 1000);
+		}
+		catch
+		{
+			Debug.Log("Timeout has occured");
+		}
+
+		Debug.Log("Do I continue?");
+		if (buffer != null)
+		{
+			temp = String.Join("", buffer);
+		}
+		serialPort.ReadTimeout = -1;
+
+		//string temp = serialPort.ReadExisting();
+		Debug.Log("Temp value is: " + temp);
+		while (!temp.Equals(string.Empty))
+		{
+			temp = serialPort.ReadExisting();
+			Debug.Log("Temp value is: " + temp);
+			if (temp.Contains("$B"))
+			{
+				Debug.Log("Benchmark already running!");
+				The.benchmarkRunning = true;
+				if (readCoroutine == null)
+				{
+					readCoroutine = StartCoroutine(ReadBenchmarkData());
+					return;
+				}
+			}
+		}
+
 		Debug.Log("Enabling Benchmark on device");
-		if (serialPort.IsOpen)
+		if (serialPort.IsOpen && !The.benchmarkRunning)
 		{
 			Debug.Log("Starting benchmark data read");
-			serialPort.Write("b");
+			ClearSerialPortBuffer();
+			serialPort.Write(startBenchmark, 0, startBenchmark.Length);
 			The.benchmarkRunning = true;
 			readCoroutine = StartCoroutine(ReadBenchmarkData());
 		}
 	}
 
-	public void DisableBenchmark()
+	public IEnumerator DisableBenchmark()
 	{
-		if (readCoroutine != null)
+		if (The.benchmarkRunning)
 		{
-			StopCoroutine(readCoroutine);
-			readCoroutine = null;
+			bool checkEnd = false;
+			string temp = string.Empty;
+			benchmarkNeedsReset = true;
+			yield return new WaitUntil(() => readingThread == null);
+			serialPort.DiscardOutBuffer();
+			serialPort.Write(startBenchmark, 0, startBenchmark.Length);
+			temp = serialPort.ReadExisting();
+			while (!temp.Equals(string.Empty))
+			{
+				temp = serialPort.ReadExisting();
+				Debug.Log("Still checking");
+			}
+			Debug.Log("Theres no data coming in!");			
+			The.benchmarkRunning = false;
+			benchmarkNeedsReset = false;
+			Debug.Log(The.benchmarkRunning);
 		}
 
-		The.benchmarkRunning = false;
-		serialPort.Write("b");
-		//benchmarkNeedsReset = true;
 	}
 
-	private void ReadNew()
+	IEnumerator DataDumpWrite(int i)
 	{
 		currentMessage = 0;
+		importMessages[1] = channelSwitchers[i];
+		while (currentMessage < importMessages.Length)
+		{
+			Debug.Log(importMessages[currentMessage]);
+			serialPort.Write(importMessages[currentMessage]);
+			yield return null;
+			currentMessage++;
+		}
+		messageSent = true;
+	}
+
+	IEnumerator ReadNew()
+	{
+		
 		for (int i = 0; i < 8; i++)
 		{
-			importMessage[1] = channelSwitcher[i];
-			while (currentMessage < importMessage.Length)
-			{
-				serialPort.Write(importMessage[currentMessage]);
-				currentMessage++;
-			}
-			currentMessage = 0;
-
+			StartCoroutine(DataDumpWrite(i));
+			serialPort.BaseStream.Flush();
+			serialPort.DiscardInBuffer();
+			yield return new WaitUntil(() => messageSent);
 			for (int k = 0; k < 2; k++)
 			{
 				channelData[k, i] = string.Empty;
@@ -257,13 +508,20 @@ public class COM : MonoBehaviour
 					}
 				}
 			}
+			messageSent = false;
 		}
 		readMessage = string.Empty;
 		isDataRead = true;
 		The.main.RefreshArray(0, The.currentChannel);
 		The.main.RefreshArray(1, The.currentChannel);
-
+		yield return null;
 		EnableDataRead();
+	}
+	private IEnumerator ReadNewSequence()
+	{
+		StartCoroutine(DisableBenchmark());
+		yield return new WaitUntil(() => !The.benchmarkRunning);
+		StartCoroutine(ReadNew());
 	}
 
 	public void FillComPortNames()
@@ -283,12 +541,14 @@ public class COM : MonoBehaviour
 	{
 		if (!hasConnected)
 		{
-			ManualStart();
+			statusManager.statusText.text = "Please connect the device and try again.";
 			return;
 		}
+		//DisableBenchmark();
 
 		statusManager.statusText.text = "Reading data from the device...";
-		ManualStart();
+		//ReadNew();
+		StartCoroutine(ReadNewSequence());
 
 
 		statusManager.statusText.text = "Data reading from device has completed!";

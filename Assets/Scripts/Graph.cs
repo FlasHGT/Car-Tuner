@@ -19,8 +19,6 @@ public class Graph : MonoBehaviour
 
 	public int maxObjectsInList = 30;
 
-	[SerializeField] COM com = null;
-
 	[SerializeField] int xSeparatorCount = 30;
 	[SerializeField] int ySeparatorCount = 20;
 
@@ -82,22 +80,6 @@ public class Graph : MonoBehaviour
 		CreateLines();
 	}
 
-	private void Update ()
-	{
-		if (lastValue == maxObjectsInList)
-		{
-			Reset();
-			//lastValue--; // UNCOMMENT SO LINIJU, LAI STRADATU APAKSEJAIS KODS
-		}
-
-		if (lastValue < startValue.Count && The.benchmarkRunning)
-		{
-			ShowGraph(startValue, 0, startLines, startConnectorVectors, start0);
-			ShowGraph(endValue, 1, endLines, endConnectorVectors, start1);
-
-			lastValue++;
-		}
-	}
 
 	private void ShowGraph(List<float> valueList, int start0End1, List<RectTransform> dotConnectors, List<Vector2> connectorVectors, List<float> startPos)
 	{

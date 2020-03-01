@@ -186,6 +186,21 @@ public class Main : MonoBehaviour
 		Reset();
 	}
 
+	public void TryWritingToDevice()
+	{
+		Debug.Log("Trying to write to comport");
+		StartCoroutine(DelayedWriteToComport());
+	}
+
+	IEnumerator DelayedWriteToComport()
+	{
+		StartCoroutine(com.DisableBenchmark());
+		yield return new WaitUntil(() => !The.benchmarkRunning);
+		Debug.Log("Writing to comport as benchmark is not running!");
+		WriteComport();
+		com.serialPort.DiscardOutBuffer();
+	}
+
 	public void WriteComport()
 	{
 		if (!com.serialPort.IsOpen)
@@ -194,7 +209,6 @@ public class Main : MonoBehaviour
 			return;
 		}
 
-		com.DisableBenchmark();
 
 		com.statusManager.statusText.text = "Preparing data for transfer to device...";
 		Reset();
@@ -241,12 +255,12 @@ public class Main : MonoBehaviour
 			com.statusManager.statusText.text = "Writing data to device has failed!";
 		};
 
-		com.writeMessage[1] = com.channelSwitcher[The.currentChannel];
+		com.writeMessages[1] = com.channelSwitchers[The.currentChannel];
 		com.currentMessage = 0;
 		
-		while (com.currentMessage < com.writeMessage.Length)
+		while (com.currentMessage < com.writeMessages.Length)
 		{
-			com.serialPort.Write(com.writeMessage[com.currentMessage]);
+			com.serialPort.Write(com.writeMessages[com.currentMessage]);
 			com.currentMessage++;
 		}
 		
@@ -258,8 +272,9 @@ public class Main : MonoBehaviour
 			xmodem.CancelOperation();
 		}
 
-		com.EnableDataRead();
+		//com.EnableDataRead();
 		Reset();
+		com.EnableDataRead();
 	}
 
 	public void RefreshArray(int array, int channel)

@@ -28,50 +28,42 @@ public class ChannelManager : MonoBehaviour
 		switch (i)
 		{
 			case 0:
-				com.importMessage[1] = "b";
-				com.graphMessage[1] = "b";
+				com.importMessages[1] = "b";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
 			case 1:
-				com.importMessage[1] = "e";
-				com.graphMessage[1] = "e";
+				com.importMessages[1] = "e";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
 			case 2:
-				com.importMessage[1] = "p";
-				com.graphMessage[1] = "p";
+				com.importMessages[1] = "p";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
 			case 3:
-				com.importMessage[1] = "0";
-				com.graphMessage[1] = "0";
+				com.importMessages[1] = "0";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
 			case 4:
-				com.importMessage[1] = "1";
-				com.graphMessage[1] = "1";
+				com.importMessages[1] = "1";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
 			case 5:
-				com.importMessage[1] = "2";
-				com.graphMessage[1] = "2";
+				com.importMessages[1] = "2";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
 			case 6:
-				com.importMessage[1] = "3";
-				com.graphMessage[1] = "3";
+				com.importMessages[1] = "3";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
 			case 7:
-				com.importMessage[1] = "4";
-				com.graphMessage[1] = "4";
+				com.importMessages[1] = "4";
 				The.currentChannel = i;
 				PerformActions(i);
 				break;
