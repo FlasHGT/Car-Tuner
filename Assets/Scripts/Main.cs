@@ -188,7 +188,13 @@ public class Main : MonoBehaviour
 
 	public void TryWritingToDevice()
 	{
+
 		Debug.Log("Trying to write to comport");
+		if (!com.serialPort.IsOpen)
+		{
+			com.statusManager.statusText.text = "Please connect the device and try again.";
+			return;
+		}
 		StartCoroutine(DelayedWriteToComport());
 	}
 
@@ -197,19 +203,29 @@ public class Main : MonoBehaviour
 		StartCoroutine(com.DisableBenchmark());
 		yield return new WaitUntil(() => !The.benchmarkRunning);
 		Debug.Log("Writing to comport as benchmark is not running!");
-		WriteComport();
 		com.serialPort.DiscardOutBuffer();
+		StartCoroutine(WriteComport());
+		
 	}
 
-	public void WriteComport()
+	IEnumerator PrepareWriteState()
 	{
-		if (!com.serialPort.IsOpen)
+		com.serialPort.DiscardOutBuffer();
+		com.writeMessages[1] = com.channelSwitchers[The.currentChannel];
+		com.currentMessage = 0;
+
+		while (com.currentMessage < com.writeMessages.Length)
 		{
-			com.statusManager.statusText.text = "Please connect the device and try again.";
-			return;
+			Debug.Log(com.writeMessages[com.currentMessage]);
+			com.serialPort.Write(com.writeMessages[com.currentMessage]);
+			yield return null;
+			com.currentMessage++;
 		}
+		com.messageSent = true;
+	}
 
-
+	IEnumerator WriteComport()
+	{
 		com.statusManager.statusText.text = "Preparing data for transfer to device...";
 		Reset();
 		
@@ -255,16 +271,9 @@ public class Main : MonoBehaviour
 			com.statusManager.statusText.text = "Writing data to device has failed!";
 		};
 
-		com.writeMessages[1] = com.channelSwitchers[The.currentChannel];
-		com.currentMessage = 0;
-		
-		while (com.currentMessage < com.writeMessages.Length)
-		{
-			com.serialPort.Write(com.writeMessages[com.currentMessage]);
-			com.currentMessage++;
-		}
-		
-		
+		StartCoroutine(PrepareWriteState());
+		yield return new WaitUntil(() => com.messageSent);
+		com.messageSent = false;
 		xmodem.Send();
 
 		if (xmodem.State != XModemStates.Idle)
@@ -274,6 +283,7 @@ public class Main : MonoBehaviour
 
 		//com.EnableDataRead();
 		Reset();
+		yield return null;
 		com.EnableDataRead();
 	}
 

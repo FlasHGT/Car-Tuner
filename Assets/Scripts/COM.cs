@@ -16,6 +16,7 @@ public class COM : MonoBehaviour
 	public SerialPort serialPort = new SerialPort();
 
 	[HideInInspector] public string[] importMessages = {"a","b","d"};
+	[HideInInspector] public string[] importMessagesChannel = { "a", "b"};
 	[HideInInspector] public string[] writeMessages = { "a", "b", "u" };
 	[HideInInspector] public string[] channelSwitchers = { "b", "e", "p", "0", "1", "2", "3", "4" };
 
@@ -49,7 +50,7 @@ public class COM : MonoBehaviour
 	private Coroutine readCoroutine = null;
 
 	private string graphEndValueOutput = string.Empty;
-	private bool messageSent = false;
+	public bool messageSent = false;
 
 	private int bdX = 0;
 	private int baX = 0;
@@ -105,7 +106,7 @@ public class COM : MonoBehaviour
 						{
 							float.TryParse(temp, out tempBAvalue);
 							tempBAvalue = tempBAvalue / 1000;
-							Debug.Log("BA " + tempBAvalue);
+							//Debug.Log("BA " + tempBAvalue);
 							graphChart.DataSource.AddPointToCategoryRealtime("BA", baX, tempBAvalue);
 							//Debug.Log("Temp BA value:" + tempBAvalue);
 							baX++;
@@ -131,7 +132,7 @@ public class COM : MonoBehaviour
 							float tempBDvalue;
 							float.TryParse(temp, out tempBDvalue);
 							tempBDvalue = tempBDvalue / 1000;
-							Debug.Log("BD " + tempBDvalue);
+							//Debug.Log("BD " + tempBDvalue);
 							graphChart.DataSource.AddPointToCategoryRealtime("BD", baX, tempBAvalue - tempBDvalue);
 							//Debug.Log("Temp BD value:" + tempBDvalue);
 							baX++;
@@ -198,6 +199,8 @@ public class COM : MonoBehaviour
 			return;
 		}
 		statusManager.statusText.text = $"Port {serialPort.PortName} sucessfully opened.";
+
+		ClearSerialPortBuffer();
 
 		EnableDataRead();
 		//StartCoroutine(CheckDeviceStatus());
@@ -367,6 +370,8 @@ public class COM : MonoBehaviour
 
 	public IEnumerator ReadBenchmarkData()
 	{
+		serialPort.BaseStream.Flush();
+		serialPort.DiscardInBuffer();
 		Debug.Log("Starting data read thread.");
 		readingThread = new Thread(ThreadReadData);
 		readingThread.Start();
@@ -395,7 +400,7 @@ public class COM : MonoBehaviour
 		serialPort.ReadTimeout = 500;
 		try
 		{
-			serialPort.Read(buffer, 0, 1000);
+			serialPort.Read(buffer, 0, 100000);
 		}
 		catch
 		{
@@ -405,24 +410,35 @@ public class COM : MonoBehaviour
 		Debug.Log("Do I continue?");
 		if (buffer != null)
 		{
-			temp = String.Join("", buffer);
+			temp = System.Text.Encoding.UTF8.GetString(buffer); ;
 		}
-		serialPort.ReadTimeout = -1;
 
+		int counter = 0;
 		//string temp = serialPort.ReadExisting();
 		Debug.Log("Temp value is: " + temp);
-		while (!temp.Equals(string.Empty))
+		while (true)
 		{
 			temp = serialPort.ReadExisting();
-			Debug.Log("Temp value is: " + temp);
-			if (temp.Contains("$B"))
+			string regexPattern = @"\$B";
+			counter = Regex.Matches(temp, regexPattern).Count;
+		
+			if (counter > 10)
 			{
 				Debug.Log("Benchmark already running!");
 				The.benchmarkRunning = true;
 				if (readCoroutine == null)
 				{
+					serialPort.ReadTimeout = -1;
 					readCoroutine = StartCoroutine(ReadBenchmarkData());
 					return;
+				}
+			}
+			if(temp == string.Empty)
+			{
+				temp = serialPort.ReadExisting();
+				if(temp == string.Empty)
+				{
+					break;
 				}
 			}
 		}
@@ -430,6 +446,7 @@ public class COM : MonoBehaviour
 		Debug.Log("Enabling Benchmark on device");
 		if (serialPort.IsOpen && !The.benchmarkRunning)
 		{
+			serialPort.ReadTimeout = -1;
 			Debug.Log("Starting benchmark data read");
 			ClearSerialPortBuffer();
 			serialPort.Write(startBenchmark, 0, startBenchmark.Length);
@@ -442,10 +459,11 @@ public class COM : MonoBehaviour
 	{
 		if (The.benchmarkRunning)
 		{
-			bool checkEnd = false;
 			string temp = string.Empty;
 			benchmarkNeedsReset = true;
 			yield return new WaitUntil(() => readingThread == null);
+			StopCoroutine(readCoroutine);
+			readCoroutine = null;
 			serialPort.DiscardOutBuffer();
 			serialPort.Write(startBenchmark, 0, startBenchmark.Length);
 			temp = serialPort.ReadExisting();
@@ -458,8 +476,37 @@ public class COM : MonoBehaviour
 			The.benchmarkRunning = false;
 			benchmarkNeedsReset = false;
 			Debug.Log(The.benchmarkRunning);
+			serialPort.BaseStream.Flush();
+			serialPort.DiscardInBuffer();
+			serialPort.DiscardOutBuffer();
 		}
 
+	}
+
+	public IEnumerator TryChangeChannel()
+	{
+		StartCoroutine(DisableBenchmark());
+		yield return new WaitUntil(() => !The.benchmarkRunning);
+		serialPort.DiscardOutBuffer();
+		StartCoroutine(ChangeChannel());
+		yield return new WaitUntil(() => messageSent);
+		ClearSerialPortBuffer();
+		messageSent = false;
+		EnableDataRead();
+	}
+
+	IEnumerator ChangeChannel()
+	{
+		currentMessage = 0;
+		while (currentMessage < importMessagesChannel.Length)
+		{
+			Debug.Log(importMessagesChannel[currentMessage]);
+			serialPort.Write(importMessagesChannel[currentMessage]);
+			yield return null;
+			currentMessage++;
+		}
+		messageSent = true;
+		Debug.Log("Channel successfully switched!");
 	}
 
 	IEnumerator DataDumpWrite(int i)
@@ -481,6 +528,7 @@ public class COM : MonoBehaviour
 		
 		for (int i = 0; i < 8; i++)
 		{
+			serialPort.DiscardOutBuffer();
 			StartCoroutine(DataDumpWrite(i));
 			serialPort.BaseStream.Flush();
 			serialPort.DiscardInBuffer();
